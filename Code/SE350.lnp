@@ -1,5 +1,0 @@
---cpu Cortex-M3 "startup_lpc17xx.o" "system_lpc17xx.o" "uart_polling.o" "main.o" "memory.o" "process.o" 
---strict --scatter "SE350.sct" 
---summary_stderr --info summarysizes --map --xref --callgraph --symbols 
---info sizes --info totals --info unused --info veneers 
- --list ".\SE350.map" -o SE350.axf

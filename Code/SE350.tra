@@ -16,7 +16,7 @@
 ### ADS-LD Output File: 'SE350.axf'
 ### ADS-LD Command File: 'SE350.lnp'
 ### Checking for dirty Components...
-### Creating CmdFile 'SE350.lnp', Handle=0x00000C54
+### Creating CmdFile 'SE350.lnp', Handle=0x000003B4
 ### Writing '.lnp' file
 ### ADS-LD Command file 'SE350.lnp' is ready.
 ### ADS-LD: About to start ADS-LD Thread.

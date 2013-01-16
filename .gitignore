@@ -2,6 +2,14 @@
 *.slo
 *.lo
 *.o
+*.crf
+*.d
+*.axf
+*.htm
+*.lnp
+*.nap
+*.lst
+*.__i
 
 # Compiled Dynamic libraries
 *.so
