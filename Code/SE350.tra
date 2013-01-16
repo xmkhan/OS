@@ -5,8 +5,10 @@
 ### List of Objects: adding '"system_lpc17xx.o"'
 ### List of Objects: adding '"uart_polling.o"'
 ### List of Objects: adding '"main.o"'
+### List of Objects: adding '"memory.o"'
+### List of Objects: adding '"process.o"'
 ### ADS-LD Command completed:
---cpu Cortex-M3 "startup_lpc17xx.o" "system_lpc17xx.o" "uart_polling.o" "main.o" 
+--cpu Cortex-M3 "startup_lpc17xx.o" "system_lpc17xx.o" "uart_polling.o" "main.o" "memory.o" "process.o" 
 --strict --scatter "SE350.sct" 
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
 --info sizes --info totals --info unused --info veneers 
@@ -14,7 +16,7 @@
 ### ADS-LD Output File: 'SE350.axf'
 ### ADS-LD Command File: 'SE350.lnp'
 ### Checking for dirty Components...
-### Creating CmdFile 'SE350.lnp', Handle=0x000004C0
+### Creating CmdFile 'SE350.lnp', Handle=0x00000C54
 ### Writing '.lnp' file
 ### ADS-LD Command file 'SE350.lnp' is ready.
 ### ADS-LD: About to start ADS-LD Thread.

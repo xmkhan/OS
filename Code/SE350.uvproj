@@ -421,6 +421,31 @@
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
             </File>
+            <File>
+              <FileName>memory.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\memory.c</FilePath>
+            </File>
+            <File>
+              <FileName>process.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\process.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Header Files</GroupName>
+          <Files>
+            <File>
+              <FileName>memory.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\memory.h</FilePath>
+            </File>
+            <File>
+              <FileName>process.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\process.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
