@@ -10,6 +10,7 @@
 *.nap
 *.lst
 *.__i
+*.uvgui*
 
 # Compiled Dynamic libraries
 *.so
