@@ -12,6 +12,11 @@
 *.__i
 *.uvgui*
 
+# Backup
+*.bak
+*.plg
+*.tra
+
 # Compiled Dynamic libraries
 *.so
 *.dylib

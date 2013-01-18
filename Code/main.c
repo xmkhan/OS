@@ -3,6 +3,7 @@
 //#include <stdio.h>
 #include "memory.h"
 
+MemNodeHead m;
 volatile unsigned int ret_val;
 
 int main() {
