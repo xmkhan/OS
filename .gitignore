@@ -16,6 +16,7 @@
 *.bak
 *.plg
 *.tra
+*.dep
 
 # Compiled Dynamic libraries
 *.so
