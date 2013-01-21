@@ -7,7 +7,6 @@
 #endif
 #include "memory.h"
 
-MemNodeHead m;
 volatile unsigned int ret_val;
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
