@@ -1,8 +1,6 @@
 #ifndef MEMORY_H
 #define MEMORY_H
  
-#include "process.h"
-
 #ifndef __SVC_0
 #define __SVC_0  __svc_indirect(0)
 #endif

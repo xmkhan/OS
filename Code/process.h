@@ -1,6 +1,8 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include "uart_polling.h"
+
 #ifndef __SVC_0
 #define __SVC_0  __svc_indirect(0)
 #endif
