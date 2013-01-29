@@ -8,6 +8,8 @@
 // Configuration parameters for memory
 #define MEMORY_BLOCK_SIZE 128
 
+void memory_init(void);
+
 void* k_request_memory_block(void);
 #define request_memory_block() _request_memory_block((unsigned int)k_request_memory_block)
 extern void* _request_memory_block(unsigned int p_func) __SVC_0;

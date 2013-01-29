@@ -17,9 +17,9 @@ int main() {
   __disable_irq();
 	uart0_init();
 	__enable_irq();
+  memory_init();
 	
   __set_CONTROL(__get_CONTROL() | BIT(0));  
-
   ret_val = (unsigned int) request_memory_block();
 #ifdef _DEBUG_
 	printf("%x\n\r", &Image$$RW_IRAM1$$ZI$$Limit);
