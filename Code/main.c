@@ -5,20 +5,29 @@
 #ifdef _DEBUG_
 #include <stdio.h>
 #endif
+
 #include "memory.h"
+#include "process.h"
 
 volatile unsigned int ret_val;
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
+void __init()
+{
+   memory_init();
+  process_init();
+}
+
 
 int main() {
 	SystemInit();
   __disable_irq();
-	uart0_init();
+ 	uart0_init();
+  __init();
 	__enable_irq();
-  memory_init();
-	
+
+  
   __set_CONTROL(__get_CONTROL() | BIT(0));  
   ret_val = (unsigned int) request_memory_block();
 #ifdef _DEBUG_

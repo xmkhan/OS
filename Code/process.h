@@ -6,15 +6,33 @@
 #ifndef __SVC_0
 #define __SVC_0  __svc_indirect(0)
 #endif
+#ifdef DEBUG
+#define USR_SZ_STACK 0x200         /* user proc stack size 2048B = 0x200*4 */
+#else
+#define USR_SZ_STACK 0x080         /* user proc stack size 512B  = 0x80*4  */
+#endif /* DEBUG */
 
+
+typedef enum { NEW=0, READY, RUNNING, BLOCKED } STATE;
+
+typedef struct PCB {
+  unsigned int pid;
+  uint8_t priority;
+  STATE state;
+  uint32_t *mp_sp; /* stack pointer of the process */
+  uint8_t importance;
+} PCB;
 
 typedef struct Process {
-	uint8_t priority;
+  PCB *pcb;
+  uint32_t start_loc;
+  uint32_t stack[USR_SZ_STACK];
   
+  struct Process* next;
 } Process;
 
 
-Process NullProcess;
+void process_init(void);
 
 extern int k_release_processor(void);
 #define release_processor() _release_processor((unsigned int)k_release_processor)
