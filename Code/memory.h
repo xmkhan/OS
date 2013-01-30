@@ -7,6 +7,7 @@
  
 // Configuration parameters for memory
 #define MEMORY_BLOCK_SIZE 128
+#define MEMORY_BLOCK_SIZE_HEX 0x80
 
 void memory_init(void);
 

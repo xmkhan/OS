@@ -94,7 +94,7 @@ Process *lookup_pid(int pid) {
 void process_init(void) {
   volatile unsigned int i = 0;
     __initialize_processes();
-  for (; i < NUM_PRIORITIES; ++i)
+  for (; i < NUM_PROCESSES; ++i)
   {
     insert_pq((Process *)(&(process_list[i])));
   }

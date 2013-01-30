@@ -7,11 +7,6 @@
 #ifndef __SVC_0
 #define __SVC_0  __svc_indirect(0)
 #endif
-#ifdef DEBUG
-#define USR_SZ_STACK 0x200         /* user proc stack size 2048B = 0x200*4 */
-#else
-#define USR_SZ_STACK 0x080         /* user proc stack size 512B  = 0x80*4  */
-#endif /* DEBUG */
 
 
 typedef enum { NEW=0, RDY, RUN, BLKD, EXIT } STATE;
@@ -27,8 +22,7 @@ typedef struct PCB {
 typedef struct Process {
   PCB *pcb;
   uint32_t start_loc;
-  uint32_t stack[USR_SZ_STACK];
-  
+  uint32_t *stack;
   struct Process* next;
 } Process;
 
