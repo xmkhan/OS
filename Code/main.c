@@ -23,10 +23,11 @@ int main() {
 	SystemInit();
   __disable_irq();
  	uart0_init();
-  __init();
+  __init();  
 	__enable_irq();
-
-  __set_CONTROL(__get_CONTROL() | BIT(0));  
+  
+  __set_CONTROL(__get_CONTROL() | BIT(0)); 
+  
   ret_val = release_processor();
 
 	return -1;
