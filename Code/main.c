@@ -8,7 +8,6 @@
 
 #include "memory.h"
 #include "process.h"
-#include "usr_proc.h"
 
 volatile unsigned int ret_val;
 
@@ -18,7 +17,7 @@ void __init()
 {
    memory_init();
    process_init();
-   __initialize_processes();
+
 }
 
 

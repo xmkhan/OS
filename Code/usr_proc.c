@@ -8,7 +8,6 @@
 #endif  /* DEBUG */
 
 #define INITIAL_xPSR 0x01000000
-#define NUM_PROCESSES 3
 
 PCB pcb_list[NUM_PROCESSES];
 Process process_list[NUM_PROCESSES];

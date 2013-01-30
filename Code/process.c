@@ -1,4 +1,5 @@
 #include "process.h"
+#include "usr_proc.h"
 
 #define NUM_PRIORITIES 4
 
@@ -86,10 +87,13 @@ Process *lookup_pid(int pid) {
 
 void process_init(void) {
   unsigned int i = 0;
+    __initialize_processes();
   for (; i < NUM_PRIORITIES; ++i)
   {
     p_pq[i] = (void *)0;
   }
+  
+  current_process = process_list[0]; // null process
 }
 
 int k_release_processor(void) {
