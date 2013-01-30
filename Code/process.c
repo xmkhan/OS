@@ -3,15 +3,21 @@
 
 #define NUM_PRIORITIES 4
 
+#define DEBUG
+
+#ifdef DEBUG
+#include <stdio.h>
+#endif  /* DEBUG */
+
 #ifndef NULL
 #define NULL (void *)0
 #endif
 
-static Process *p_pq[NUM_PRIORITIES];
-static Process *current_process = NULL;
+volatile static Process *p_pq[NUM_PRIORITIES];
+volatile static Process *current_process = NULL;
 
 int insert_pq(Process* p) {
-  Process *pr_head = NULL;
+  volatile Process *pr_head = NULL;
     if (p == NULL || p->pcb == NULL || 
       p->pcb->priority >= NUM_PRIORITIES) {
         return -1;
@@ -28,40 +34,40 @@ int insert_pq(Process* p) {
       pr_head->next = p;
     }
     
-    p->pcb->state = RDY;
+    p->pcb->state = NEW;
     
     return 0;
 }
 
 int remove_pq(Process* p) {
-  Process *pr_head = NULL;
-    if (p == NULL || p->pcb == NULL || 
-      p->pcb->priority >= NUM_PRIORITIES) {
-        return -1;
-    }
+  volatile Process *pr_head = NULL;
+  if (p == NULL || p->pcb == NULL || 
+    p->pcb->priority >= NUM_PRIORITIES) {
+      return -1;
+  }
     
-    pr_head = p_pq[p->pcb->priority];
-    if (pr_head != p)
-    {
-      while(pr_head->next != p) {
-          pr_head = pr_head->next;
-      }
-      pr_head->next = p->next;
-    } else
-    {
-      p_pq[p->pcb->priority] = pr_head->next;
-      pr_head->pcb->state = EXIT;
+  pr_head = p_pq[p->pcb->priority];
+  if (pr_head != p)
+  {
+    while(pr_head->next != p) {
+        pr_head = pr_head->next;
     }
+    pr_head->next = p->next;
+  } else
+  {
+    p_pq[p->pcb->priority] = pr_head->next;
+    pr_head->pcb->state = EXIT;
+  }
   return 0;
 }
 
 int scheduler(void) {
-  unsigned int i = 0;
-  Process *pr_head = NULL;
+  volatile unsigned int i = 0;
+  volatile Process *pr_head = NULL;
   for(; i < NUM_PRIORITIES; ++i)
   {
      pr_head = p_pq[i];
-     while (pr_head != NULL && pr_head->pcb->state != RDY)
+     while (pr_head != NULL && (pr_head->pcb->state != RDY && pr_head->pcb->state != NEW))
      {
        pr_head = pr_head->next;
      }
@@ -71,8 +77,8 @@ int scheduler(void) {
 }
 
 Process *lookup_pid(int pid) {
-  unsigned int i = 0;
-  Process *pr_head = NULL;
+  volatile unsigned int i = 0;
+  volatile Process *pr_head = NULL;
   for(; i < NUM_PRIORITIES; ++i)
   {
      pr_head = p_pq[i];
@@ -80,24 +86,24 @@ Process *lookup_pid(int pid) {
      {
        pr_head = pr_head->next;
      }
-     if (pr_head != NULL) return pr_head;
+     if (pr_head != NULL) return (Process *)pr_head;
   }
   return (void *)0;
 }
 
 void process_init(void) {
-  unsigned int i = 0;
+  volatile unsigned int i = 0;
     __initialize_processes();
   for (; i < NUM_PRIORITIES; ++i)
   {
-    p_pq[i] = (void *)0;
+    insert_pq((Process *)(&(process_list[i])));
   }
   
-  current_process = process_list[0]; // null process
+  current_process = &(process_list[0]); // null process
 }
 
 int k_release_processor(void) {
-   Process *old_process = current_process;
+   volatile Process *old_process = current_process;
    volatile STATE state;
 	 volatile int pid = scheduler();
    current_process = lookup_pid(pid);
