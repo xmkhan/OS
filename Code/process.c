@@ -32,10 +32,8 @@ int insert_pq(Process* p) {
         pr_head = pr_head->next;
       }
       pr_head->next = p;
-    }
-    
-    p->pcb->state = NEW;
-    
+      p->next = NULL;
+    }    
     return 0;
 }
 
@@ -56,7 +54,7 @@ int remove_pq(Process* p) {
   } else
   {
     p_pq[p->pcb->priority] = pr_head->next;
-    pr_head->pcb->state = EXIT;
+    //pr_head->pcb->state = EXIT;
   }
   return 0;
 }
@@ -96,10 +94,12 @@ void process_init(void) {
     __initialize_processes();
   for (; i < NUM_PROCESSES; ++i)
   {
+    process_list[i].pcb->state = NEW;
     insert_pq((Process *)(&(process_list[i])));
   }
   
   current_process = &(process_list[0]); // null process
+  remove_pq((Process*)current_process);
 }
 
 int k_release_processor(void) {
@@ -117,7 +117,9 @@ int k_release_processor(void) {
 	   if (old_process->pcb->state != NEW) {
 		     old_process->pcb->state = RDY;
          old_process->pcb->mp_sp = (uint32_t *) __get_MSP();
+         insert_pq((Process*)old_process);
 		 }
+     remove_pq((Process*)current_process);
 		 current_process->pcb->state = RUN;
 		 __set_MSP((uint32_t) current_process->pcb->mp_sp);
 		 __rte();  /* pop exception stack frame from the stack for a new process */
@@ -125,6 +127,8 @@ int k_release_processor(void) {
 		 old_process->pcb->state = RDY; 
 		 old_process->pcb->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
 		 
+     insert_pq((Process*)old_process);
+     remove_pq((Process*)current_process);
 		 current_process->pcb->state = RUN;
 		 __set_MSP((uint32_t) current_process->pcb->mp_sp); /* switch to the new proc's stack */		
 	 } else {

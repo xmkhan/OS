@@ -20,8 +20,8 @@ void __initialize_processes(void) {
   uint32_t *sp = (void *)0;
   volatile unsigned int i = 0, j = 0, k = 0;  
     
-  process_ptr process_t[] = {null_process, proc1, proc2};
-  int priority_t[] = {3, 1, 1};
+  process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5};
+  int priority_t[] = {3, 1, 1, 1, 1, 1};
 
   for(k=0;k< NUM_PROCESSES; k++) {
     pcb_list[k] = k_request_memory_block();
@@ -34,9 +34,10 @@ void __initialize_processes(void) {
     pcb_list[i]->state = NEW;
     process_list[i].pcb = (PCB *)pcb_list[i];
     process_list[i].start_loc = (uint32_t)process_t[i];
+    process_list[i].next = (void *)0;
     
-    sp = process_list[i].stack + MEMORY_BLOCK_SIZE_HEX;
-   // sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE_HEX);
+   // sp = process_list[i].stack + MEMORY_BLOCK_SIZE_HEX;
+    sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE_HEX);
     printf("%x %x %x\n\r", process_list[i].stack + MEMORY_BLOCK_SIZE_HEX, sp, process_list[i].stack);
     
     /* 8 bytes alignement adjustment to exception stack frame */
@@ -91,6 +92,60 @@ void proc2(void)
       ret_val = release_processor();
 #ifdef DEBUG
       printf("\n\rproc2: ret_val=%d. ", ret_val);
+#else
+      uart0_put_string("\n\r");
+#endif
+    }
+    uart0_put_char('a' + i%26);
+    i++;
+  }
+}
+
+void proc3(void)
+{
+  volatile int i =0;
+  volatile int ret_val = 20;
+  while ( 1) {
+    if (i!=0 &&i%5 == 0 ) {
+      ret_val = release_processor();
+#ifdef DEBUG
+      printf("\n\rproc3: ret_val=%d. ", ret_val);
+#else
+      uart0_put_string("\n\r");
+#endif
+    }
+    uart0_put_char('a' + i%26);
+    i++;
+  }
+}
+
+void proc4(void)
+{
+  volatile int i =0;
+  volatile int ret_val = 20;
+  while ( 1) {
+    if (i!=0 &&i%5 == 0 ) {
+      ret_val = release_processor();
+#ifdef DEBUG
+      printf("\n\rproc4: ret_val=%d. ", ret_val);
+#else
+      uart0_put_string("\n\r");
+#endif
+    }
+    uart0_put_char('a' + i%26);
+    i++;
+  }
+}
+
+void proc5(void)
+{
+  volatile int i =0;
+  volatile int ret_val = 20;
+  while ( 1) {
+    if (i!=0 &&i%5 == 0 ) {
+      ret_val = release_processor();
+#ifdef DEBUG
+      printf("\n\rproc5: ret_val=%d. ", ret_val);
 #else
       uart0_put_string("\n\r");
 #endif
