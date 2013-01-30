@@ -1,6 +1,7 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include <LPC17xx.h>
 #include "uart_polling.h"
 
 #ifndef __SVC_0
@@ -13,7 +14,7 @@
 #endif /* DEBUG */
 
 
-typedef enum { NEW=0, READY, RUNNING, BLOCKED, EXIT } STATE;
+typedef enum { NEW=0, RDY, RUN, BLKD, EXIT } STATE;
 
 typedef struct PCB {
   unsigned int pid;
@@ -45,5 +46,7 @@ extern int _set_process_priority(unsigned int p_func) __SVC_0;
 extern int k_get_process_priority(void);
 #define get_process_priority() _get_process_priority((unsigned int)k_get_process_priority)
 extern int _get_process_priority(unsigned int p_func) __SVC_0;
+
+extern void __rte(void);
 
 #endif

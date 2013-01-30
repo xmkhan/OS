@@ -8,7 +8,7 @@
 #endif  /* DEBUG */
 
 #define INITIAL_xPSR 0x01000000
-#define NUM_PROCESSES 1
+#define NUM_PROCESSES 3
 
 PCB pcb_list[NUM_PROCESSES];
 Process process_list[NUM_PROCESSES];
@@ -18,8 +18,8 @@ typedef void (*process_ptr)(void);
 void __initialize_processes() {
   uint32_t *sp = (void *)0;
   unsigned int i = 0;
-  process_ptr process_t[] = {null_process};
-  int priority_t[] = {1};
+  process_ptr process_t[] = {null_process, proc1, proc2};
+  int priority_t[] = {3, 1, 1};
 
   for (; i < NUM_PROCESSES; i++) {
     pcb_list[i].pid = i;
@@ -53,5 +53,42 @@ void null_process(void) {
 #ifdef DEBUG
       printf("\n\rproc1: ret_val=%d. ", ret_val);
 #endif
+  }
+}
+
+void proc1(void)
+{
+  volatile int i =0;
+  volatile int ret_val = 10;
+  while ( 1) {
+    if (i!=0 &&i%5 == 0 ) {
+      ret_val = release_processor();
+#ifdef DEBUG
+      printf("\n\rproc1: ret_val=%d. ", ret_val);
+#else
+      uart0_put_string("\n\r");
+#endif
+    }
+    uart0_put_char('A' + i%26);
+    i++;
+  }
+
+}
+
+void proc2(void)
+{
+  volatile int i =0;
+  volatile int ret_val = 20;
+  while ( 1) {
+    if (i!=0 &&i%5 == 0 ) {
+      ret_val = release_processor();
+#ifdef DEBUG
+      printf("\n\rproc2: ret_val=%d. ", ret_val);
+#else
+      uart0_put_string("\n\r");
+#endif
+    }
+    uart0_put_char('a' + i%26);
+    i++;
   }
 }

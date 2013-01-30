@@ -7,15 +7,7 @@
 #endif
 
 static Process *p_pq[NUM_PRIORITIES];
-
 static Process *current_process = NULL;
-
-static unsigned int pid = 0;
-
-int k_release_processor(void) {
-	return 0;
-}
-
 
 int insert_pq(Process* p) {
   Process *pr_head = NULL;
@@ -35,7 +27,7 @@ int insert_pq(Process* p) {
       pr_head->next = p;
     }
     
-    p->pcb->state = READY;
+    p->pcb->state = RDY;
     
     return 0;
 }
@@ -68,7 +60,7 @@ int scheduler(void) {
   for(; i < NUM_PRIORITIES; ++i)
   {
      pr_head = p_pq[i];
-     while (pr_head != NULL && pr_head->pcb->state != READY)
+     while (pr_head != NULL && pr_head->pcb->state != RDY)
      {
        pr_head = pr_head->next;
      }
@@ -98,4 +90,36 @@ void process_init(void) {
   {
     p_pq[i] = (void *)0;
   }
+}
+
+int k_release_processor(void) {
+   Process *old_process = current_process;
+   volatile STATE state;
+	 volatile int pid = scheduler();
+   current_process = lookup_pid(pid);
+  
+	 if (current_process == NULL) {
+	   return -1;  
+	 }
+	 state = current_process->pcb->state;
+   
+   if (state == NEW) {
+	   if (old_process->pcb->state != NEW) {
+		     old_process->pcb->state = RDY;
+         old_process->pcb->mp_sp = (uint32_t *) __get_MSP();
+		 }
+		 current_process->pcb->state = RUN;
+		 __set_MSP((uint32_t) current_process->pcb->mp_sp);
+		 __rte();  /* pop exception stack frame from the stack for a new process */
+	 } else if (state == RDY) {
+		 old_process->pcb->state = RDY; 
+		 old_process->pcb->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
+		 
+		 current_process->pcb->state = RUN;
+		 __set_MSP((uint32_t) current_process->pcb->mp_sp); /* switch to the new proc's stack */		
+	 } else {
+	     current_process = old_process; /* revert back to the old proc on error */
+	     return -1;
+	 } 
+	return 0;
 }
