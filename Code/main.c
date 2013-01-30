@@ -8,6 +8,7 @@
 
 #include "memory.h"
 #include "process.h"
+#include "usr_proc.h"
 
 volatile unsigned int ret_val;
 
@@ -16,7 +17,8 @@ extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 void __init()
 {
    memory_init();
-  process_init();
+   process_init();
+   __initialize_processes();
 }
 
 

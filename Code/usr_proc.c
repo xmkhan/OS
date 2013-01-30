@@ -15,7 +15,7 @@ Process process_list[NUM_PROCESSES];
 
 typedef void (*process_ptr)(void);
 
-void __initialize_processes() {
+void __initialize_processes(void) {
   uint32_t *sp = (void *)0;
   unsigned int i = 0;
   process_ptr process_t[] = {null_process, proc1, proc2};
