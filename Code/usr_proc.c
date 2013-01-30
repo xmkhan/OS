@@ -26,17 +26,18 @@ void __initialize_processes(void) {
   for(k=0;k< NUM_PROCESSES; k++) {
     pcb_list[k] = k_request_memory_block();
     process_list[k].stack = k_request_memory_block();
-    printf(" %x %x\n", pcb_list[k], process_list[k].stack);
   }
 
   for (; i < NUM_PROCESSES; i++) {
     pcb_list[i]->pid = i;
     pcb_list[i]->priority = priority_t[i];
     pcb_list[i]->state = NEW;
-    process_list[i].pcb = (PCB *)&pcb_list[i];
+    process_list[i].pcb = (PCB *)pcb_list[i];
     process_list[i].start_loc = (uint32_t)process_t[i];
     
-    sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE_HEX);;
+    sp = process_list[i].stack + MEMORY_BLOCK_SIZE_HEX;
+   // sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE_HEX);
+    printf("%x %x %x\n\r", process_list[i].stack + MEMORY_BLOCK_SIZE_HEX, sp, process_list[i].stack);
     
     /* 8 bytes alignement adjustment to exception stack frame */
     if (!(((uint32_t)sp) & 0x04)) {
