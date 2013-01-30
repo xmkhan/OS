@@ -69,6 +69,7 @@ void proc1(void)
 {
   volatile int i =0;
   volatile int ret_val = 10;
+  void *a = request_memory_block();
   while ( 1) {
     if (i!=0 &&i%5 == 0 ) {
       ret_val = release_processor();
