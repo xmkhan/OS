@@ -7,17 +7,44 @@
 #include <stdio.h>
 #endif  /* DEBUG */
 
+#define INITIAL_xPSR 0x01000000
+#define NUM_PROCESSES 1
 
-PCB null_pcb;
+PCB pcb_list[NUM_PROCESSES];
+Process process_list[NUM_PROCESSES];
 
+typedef void (*process_ptr)(void);
 
 void __initialize_processes() {
-  null_pcb.pid = 0;
-  null_pcb.priority = 1;
-  null_pcb.state = NEW;
-  
-  null_proc.pcb = &null_pcb;
-  null_proc.start_loc = (uint32_t) null_process;
+  uint32_t *sp = (void *)0;
+  unsigned int i = 0;
+  process_ptr process_t[] = {null_process};
+  int priority_t[] = {1};
+
+  for (; i < NUM_PROCESSES; i++) {
+    pcb_list[i].pid = i;
+    pcb_list[i].priority = priority_t[i];
+    pcb_list[i].state = NEW;
+    process_list[i].pcb = &pcb_list[i];
+    process_list[i].start_loc = (uint32_t)process_t[i];
+    process_list[i].pcb->mp_sp = (uint32_t *)((uint32_t)process_list[i].stack + USR_SZ_STACK);
+    
+    sp = process_list[i].pcb->mp_sp;
+    
+    /* 8 bytes alignement adjustment to exception stack frame */
+    if (!(((uint32_t)sp) & 0x04)) {
+        --sp;
+    }
+    
+    *(--sp)  = INITIAL_xPSR;      /* user process initial xPSR */ 
+    *(--sp)  = (uint32_t)process_t[i];  /* PC contains the entry point of the process */
+
+    for (i = 0; i < 6; i++) { /* R0-R3, R12 are cleared with 0 */
+      *(--process_list[i].pcb->mp_sp) = 0x0;
+    }
+    
+    process_list[i].pcb->mp_sp = sp;
+  }
 }
 
 void null_process(void) {

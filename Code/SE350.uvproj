@@ -441,6 +441,11 @@
               <FileType>1</FileType>
               <FilePath>.\Retarget.c</FilePath>
             </File>
+            <File>
+              <FileName>usr_proc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\usr_proc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -455,6 +460,11 @@
               <FileName>process.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\process.h</FilePath>
+            </File>
+            <File>
+              <FileName>usr_proc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\usr_proc.h</FilePath>
             </File>
           </Files>
         </Group>

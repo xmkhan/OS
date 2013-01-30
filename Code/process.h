@@ -13,7 +13,7 @@
 #endif /* DEBUG */
 
 
-typedef enum { NEW=0, READY, RUNNING, BLOCKED } STATE;
+typedef enum { NEW=0, READY, RUNNING, BLOCKED, EXIT } STATE;
 
 typedef struct PCB {
   unsigned int pid;
