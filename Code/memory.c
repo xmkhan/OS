@@ -1,5 +1,6 @@
 #include "uart_polling.h"
 #include "memory.h"
+#include "process.h"
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
@@ -20,7 +21,6 @@ void memory_init()
 {
   volatile int a;
   MemNode* mem_node;
-
   MEMORY_SIZE = (unsigned int) ((unsigned) 0x10008000 - (unsigned int) &Image$$RW_IRAM1$$ZI$$Limit);
   NUM_MEMORY_BLOCKS = MEMORY_SIZE / (MEMORY_BLOCK_SIZE + sizeof(MemNode));
 
@@ -39,7 +39,11 @@ void memory_init()
 
 void* k_request_memory_block(void) {
   MemNode* mem_node = memory_list;
-  
+  if (current_process && current_process->pcb) {
+    //block the process on memory_req
+    current_process->pcb->state = BLKD;
+    k_release_processor();
+  }
   // Search for free block
   while(mem_node != 0)
   {
@@ -52,8 +56,9 @@ void* k_request_memory_block(void) {
      
     mem_node = mem_node->next;
   }
-
-  return 0;
+  // If we reach here, then we have no memory available at the current time
+  
+  return (void *)0;
 }
 
 int k_release_memory_block(void* p_mem_blk) {

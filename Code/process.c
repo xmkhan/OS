@@ -14,7 +14,7 @@
 #endif
 
 volatile static Process *p_pq[NUM_PRIORITIES];
-volatile static Process *current_process = NULL;
+Process *current_process;
 
 int insert_pq(Process* p) {
   volatile Process *pr_head = NULL;
@@ -91,6 +91,20 @@ Process *lookup_pid(int pid) {
   return (void *)0;
 }
 
+int k_get_process_priority(int process_ID) {
+  Process *p = lookup_pid(process_ID);
+  if (p == NULL) return -1;
+  return p->pcb->priority;
+}
+
+int k_set_process_priority(int process_ID, int priority) {
+  Process *p = lookup_pid(process_ID);
+  if (process_ID == 0 || 
+    !(priority >= 0 && priority < NUM_PRIORITIES)) return -1; // don't change priority of null process
+  p->pcb->priority = priority;
+  return p->pcb->priority;
+}
+
 void process_init(void) {
   volatile unsigned int i = 0;
     __initialize_processes();
@@ -103,7 +117,7 @@ void process_init(void) {
 }
 
 int k_release_processor(void) {
-   volatile Process *old_process = current_process;
+   Process *old_process = current_process;
    volatile STATE state;
 	 volatile int pid = scheduler();
    current_process = lookup_pid(pid);
