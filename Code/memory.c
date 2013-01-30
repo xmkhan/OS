@@ -18,15 +18,15 @@ static MemNode* memory_list = 0;
 
 void memory_init()
 {
-  volatile int a = 0;
-  volatile MemNode* mem_node;
+  volatile int a;
+  MemNode* mem_node;
 
   MEMORY_SIZE = (unsigned int) ((unsigned) 0x10008000 - (unsigned int) &Image$$RW_IRAM1$$ZI$$Limit);
   NUM_MEMORY_BLOCKS = MEMORY_SIZE / (MEMORY_BLOCK_SIZE + sizeof(MemNode));
 
   memory_list = (MemNode *)((unsigned int)&Image$$RW_IRAM1$$ZI$$Limit);
   mem_node = memory_list;
-  for(; a < NUM_MEMORY_BLOCKS; a++)
+  for(a=0; a < NUM_MEMORY_BLOCKS; a++)
   {
     mem_node->block_num = a;
     mem_node->used = 0;
@@ -38,7 +38,7 @@ void memory_init()
 }
 
 void* k_request_memory_block(void) {
-  volatile MemNode* mem_node = memory_list;
+  MemNode* mem_node = memory_list;
   
   // Search for free block
   while(mem_node != 0)
@@ -57,7 +57,7 @@ void* k_request_memory_block(void) {
 }
 
 int k_release_memory_block(void* p_mem_blk) {
-  volatile MemNode* cur_mem = memory_list;
+  MemNode* cur_mem = memory_list;
   while(cur_mem != 0)
   {
     if(cur_mem->address == (unsigned int) p_mem_blk)

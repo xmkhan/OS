@@ -1,4 +1,5 @@
 #include "process.h"
+#include "memory.h"
 #include "uart_polling.h"
 #include "usr_proc.h"
 
@@ -10,26 +11,32 @@
 
 #define INITIAL_xPSR 0x01000000
 
-PCB pcb_list[NUM_PROCESSES];
+PCB *pcb_list[NUM_PROCESSES];
 Process process_list[NUM_PROCESSES];
 
 typedef void (*process_ptr)(void);
 
 void __initialize_processes(void) {
   uint32_t *sp = (void *)0;
-  volatile unsigned int i = 0, j = 0;
+  volatile unsigned int i = 0, j = 0, k = 0;  
+    
   process_ptr process_t[] = {null_process, proc1, proc2};
   int priority_t[] = {3, 1, 1};
 
+  for(k=0;k< NUM_PROCESSES; k++) {
+    pcb_list[k] = k_request_memory_block();
+    process_list[k].stack = k_request_memory_block();
+    printf(" %x %x\n", pcb_list[k], process_list[k].stack);
+  }
+
   for (; i < NUM_PROCESSES; i++) {
-    pcb_list[i].pid = i;
-    pcb_list[i].priority = priority_t[i];
-    pcb_list[i].state = NEW;
+    pcb_list[i]->pid = i;
+    pcb_list[i]->priority = priority_t[i];
+    pcb_list[i]->state = NEW;
     process_list[i].pcb = (PCB *)&pcb_list[i];
     process_list[i].start_loc = (uint32_t)process_t[i];
-    process_list[i].pcb->mp_sp = (uint32_t *)((uint32_t)process_list[i].stack + USR_SZ_STACK);
     
-    sp = process_list[i].stack + USR_SZ_STACK;
+    sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE_HEX);;
     
     /* 8 bytes alignement adjustment to exception stack frame */
     if (!(((uint32_t)sp) & 0x04)) {
@@ -72,7 +79,6 @@ void proc1(void)
     uart0_put_char('A' + i%26);
     i++;
   }
-
 }
 
 void proc2(void)
