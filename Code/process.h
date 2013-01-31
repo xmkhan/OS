@@ -8,9 +8,9 @@
 #define __SVC_0  __svc_indirect(0)
 #endif
 
+#define NUM_PRIORITIES 4
 
 typedef enum { NEW=0, RDY, RUN, BLKD, EXIT } STATE;
-typedef enum { NONE=0, MEM } EVENT_Q;
 
 typedef struct PCB {
   unsigned int pid;
@@ -30,8 +30,8 @@ typedef struct Process {
 extern Process *current_process;
 
 void process_init(void);
-
-
+int insert_process_pq(Process* p);
+int remove_process_pq(Process* p);
 
 extern int k_release_processor(void);
 #define release_processor() _release_processor((unsigned int)k_release_processor)
