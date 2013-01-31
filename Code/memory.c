@@ -1,11 +1,18 @@
 #include "uart_polling.h"
 #include "memory.h"
 #include "process.h"
+#include "pq.h"
+
+#ifndef NULL
+#define NULL (void *)0
+#endif
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
 static unsigned int MEMORY_SIZE;
 static int NUM_MEMORY_BLOCKS;
+
+volatile static Process *mem_pq[NUM_PRIORITIES];
 
 typedef struct MemNode {
   uint8_t block_num;
@@ -39,11 +46,13 @@ void memory_init()
 
 void* k_request_memory_block(void) {
   MemNode* mem_node = memory_list;
-  if (current_process && current_process->pcb) {
+  if (NUM_MEMORY_BLOCKS == 0) {
     //block the process on memory_req
     current_process->pcb->state = BLKD;
+    insert_pq((Process**) mem_pq, (Process*)current_process);
     k_release_processor();
   }
+  
   // Search for free block
   while(mem_node != 0)
   {
@@ -51,6 +60,7 @@ void* k_request_memory_block(void) {
     if(mem_node->used == 0)
     {
       mem_node->used = 1;
+      NUM_MEMORY_BLOCKS--;
       return (void *)mem_node->address;
     }
      
@@ -63,11 +73,20 @@ void* k_request_memory_block(void) {
 
 int k_release_memory_block(void* p_mem_blk) {
   MemNode* cur_mem = memory_list;
+  Process* blkProcess = NULL;
   while(cur_mem != 0)
   {
     if(cur_mem->address == (unsigned int) p_mem_blk)
     {
       cur_mem->used = 0;
+      
+      NUM_MEMORY_BLOCKS++;
+      blkProcess = get_process((Process**) mem_pq);
+      if(blkProcess != NULL) {
+        blkProcess->pcb->state = RDY;
+        remove_pq((Process**) mem_pq, blkProcess);
+        insert_process_pq(blkProcess);
+      }
       return 0;
     }
     
