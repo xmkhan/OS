@@ -1,3 +1,4 @@
+#include "memory.h"
 #include "process.h"
 #include "usr_proc.h"
 #include "pq.h"
@@ -39,18 +40,15 @@ int scheduler(void) {
 }
 
 Process *lookup_pid(int pid) {
-  volatile unsigned int i = 0;
-  volatile Process *pr_head = NULL;
-  for(; i < NUM_PRIORITIES; ++i)
-  {
-     pr_head = p_pq[i];
-     while (pr_head != NULL && pr_head->pcb->pid != pid)
-     {
-       pr_head = pr_head->next;
-     }
-     if (pr_head != NULL) return (Process *)pr_head;
-  }
-  return (void *)0;
+  Process *proc = lookup_pid_pq((Process **)p_pq, pid);
+	if (proc != NULL) {
+		return proc;
+	}
+	if (current_process != NULL && current_process->pcb->pid == pid) {
+		return current_process;
+	}
+	proc = lookup_pid_pq((Process **)mem_pq, pid);
+	return proc; // will be NULL if it doesn't exist here either
 }
 
 int k_get_process_priority(int process_ID) {

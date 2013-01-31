@@ -61,3 +61,18 @@ Process* get_process(Process *pq[]) {
   }
   return 0; // return NULL
 }
+
+Process *lookup_pid_pq(Process* pq[], int pid) {
+  volatile unsigned int i = 0;
+  volatile Process *pr_head = NULL;
+  for(; i < NUM_PRIORITIES; ++i)
+  {
+     pr_head = pq[i];
+     while (pr_head != NULL && pr_head->pcb->pid != pid)
+     {
+       pr_head = pr_head->next;
+     }
+     if (pr_head != NULL) return (Process *)pr_head;
+  }
+  return (void *)0;
+}

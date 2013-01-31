@@ -1,13 +1,17 @@
 #ifndef MEMORY_H
 #define MEMORY_H
- 
+
+#include "process.h"
+
 #ifndef __SVC_0
 #define __SVC_0  __svc_indirect(0)
 #endif
- 
+
 // Configuration parameters for memory
 #define MEMORY_BLOCK_SIZE 128
 #define MEMORY_BLOCK_SIZE_HEX 0x80
+
+extern volatile Process *mem_pq[];
 
 void memory_init(void);
 

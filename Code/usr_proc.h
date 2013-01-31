@@ -3,7 +3,7 @@
 
 void __initialize_processes(void);
 
-#define NUM_PROCESSES 6
+#define NUM_PROCESSES 7
 
 extern PCB *pcb_list[];
 extern Process process_list[];
