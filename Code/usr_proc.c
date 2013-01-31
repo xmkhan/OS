@@ -20,8 +20,8 @@ void __initialize_processes(void) {
   uint32_t *sp = (void *)0;
   volatile unsigned int i = 0, j = 0, k = 0;  
     
-  process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5};
-  int priority_t[] = {3, 1, 1, 1, 1, 1};
+  process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
+  int priority_t[] = {4, 0, 1, 1, 1, 1, 1};
 
   for(k=0;k< NUM_PROCESSES; k++) {
     pcb_list[k] = k_request_memory_block();
@@ -67,91 +67,126 @@ void null_process(void) {
 
 void proc1(void)
 {
-  volatile int i =0;
+  volatile int i = 0;
   volatile int ret_val = 10;
   void *a = request_memory_block();
-  while ( 1) {
-    if (i!=0 &&i%5 == 0 ) {
-      ret_val = release_processor();
-#ifdef DEBUG
-      printf("\n\rproc1: ret_val=%d. ", ret_val);
-#else
-      uart0_put_string("\n\r");
-#endif
-    }
-    uart0_put_char('A' + i%26);
-    i++;
+  while (1) {
+		a = request_memory_block();
   }
+#if !defined(TEST1) && defined(DEBUG)
+#define TEST1
+	printf("\n\rG013_test: test 1 FAIL");
+#elif !defined(TEST1) && !defined(DEBUG)
+#define TEST1
+	uart0_put_string("\n\rG013_test: test 1 FAIL");
+#endif
+	while (1) {
+		ret_val = release_processor();
+	}
 }
 
 void proc2(void)
 {
-  volatile int i =0;
+  volatile int i = 0;
   volatile int ret_val = 20;
-  while ( 1) {
-    if (i!=0 &&i%5 == 0 ) {
-      ret_val = release_processor();
-#ifdef DEBUG
-      printf("\n\rproc2: ret_val=%d. ", ret_val);
-#else
-      uart0_put_string("\n\r");
+#if !defined(TEST1) && defined(DEBUG)
+#define TEST1
+	printf("\n\rG013_test: test 1 OK");
+#elif !defined(TEST1) && !defined(DEBUG)
+#define TEST1
+	uart0_put_string("\n\rG013_test: test 1 OK");
 #endif
-    }
-    uart0_put_char('a' + i%26);
-    i++;
-  }
+	i = set_process_priority(2, 4);
+	if (i == -1) {
+#if !defined(TEST2) && defined(DEBUG)
+#define TEST2
+		printf("\n\rG013_test: test 2 OK");
+#elif !defined(TEST2) && !defined(DEBUG)
+#define TEST2
+		uart0_put_string("\n\rG013_test: test 2 OK");
+#endif
+	} else {
+#if !defined(TEST2) && defined(DEBUG)
+#define TEST2
+		printf("\n\rG013_test: test 2 FAIL");
+#elif !defined(TEST2) && !defined(DEBUG)
+#define TEST2
+		uart0_put_string("\n\rG013_test: test 2 FAIL");
+#endif
+	}
+	while (1) {
+		ret_val = release_processor();
+	}
 }
 
 void proc3(void)
 {
-  volatile int i =0;
+  volatile int i = 0;
   volatile int ret_val = 20;
-  while ( 1) {
-    if (i!=0 &&i%5 == 0 ) {
-      ret_val = release_processor();
-#ifdef DEBUG
-      printf("\n\rproc3: ret_val=%d. ", ret_val);
-#else
-      uart0_put_string("\n\r");
+  i = get_process_priority(3);
+	if (i == 1) {
+#if !defined(TEST3) && defined(DEBUG)
+#define TEST3
+		printf("\n\rG013_test: test 3 OK");
+#elif !defined(TEST3) && !defined(DEBUG)
+#define TEST3
+		uart0_put_string("\n\rG013_test: test 3 OK");
 #endif
-    }
-    uart0_put_char('a' + i%26);
-    i++;
-  }
+	}
+	else {
+#if !defined(TEST3) && defined(DEBUG)
+#define TEST3
+		printf("\n\rG013_test: test 3 FAIL");
+#elif !defined(TEST3) && !defined(DEBUG)
+#define TEST3
+		uart0_put_string("\n\rG013_test: test 3 FAIL");
+#endif
+	}
+	while (1) {
+		ret_val = release_processor();
+	}
 }
 
 void proc4(void)
 {
-  volatile int i =0;
+	static volatile int counter = 0;
+  volatile int i = 0;
   volatile int ret_val = 20;
-  while ( 1) {
-    if (i!=0 &&i%5 == 0 ) {
-      ret_val = release_processor();
-#ifdef DEBUG
-      printf("\n\rproc4: ret_val=%d. ", ret_val);
-#else
-      uart0_put_string("\n\r");
-#endif
-    }
-    uart0_put_char('a' + i%26);
-    i++;
-  }
+	void *a;
+	set_process_priority(4, 0);
+	a = request_memory_block();
+	while (1) {
+		ret_val = release_processor();
+	}
 }
 
 void proc5(void)
 {
-  volatile int i =0;
+  volatile int i = 0;
   volatile int ret_val = 20;
-  while ( 1) {
-    if (i!=0 &&i%5 == 0 ) {
-      ret_val = release_processor();
-#ifdef DEBUG
-      printf("\n\rproc5: ret_val=%d. ", ret_val);
-#else
-      uart0_put_string("\n\r");
+#if !defined(TEST4) && defined(DEBUG)
+#define TEST4
+		printf("\n\rG013_test: test 4 OK");
+#elif !defined(TEST4) && !defined(DEBUG)
+#define TEST4
+		uart0_put_string("\n\rG013_test: test 4 OK");
 #endif
-    }
-    uart0_put_char('a' + i%26);
-    i++;
+  while (1) {
+    ret_val = release_processor();
+  }
+}
+
+void proc6(void)
+{
+	volatile int ret_val = 20;
+#if !defined(TESTEND) && defined(DEBUG)
+#define TESTEND
+	printf("\n\rG013_test: END");
+#elif !defined(TESTEND) && !defined(DEBUG)
+#define TESTEND
+	uart0_put_string("\n\rG013_test: END");
+#endif
+  while (1) {
+     ret_val = release_processor();
   }
 }
