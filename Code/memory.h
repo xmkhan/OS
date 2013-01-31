@@ -11,7 +11,7 @@
 #define MEMORY_BLOCK_SIZE 128
 #define MEMORY_BLOCK_SIZE_HEX 0x80
 
-extern volatile Process *mem_pq[];
+extern volatile PCB *mem_pq[];
 
 void memory_init(void);
 

@@ -12,7 +12,7 @@ extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 static unsigned int MEMORY_SIZE;
 static int NUM_MEMORY_BLOCKS;
 
-volatile Process *mem_pq[NUM_PRIORITIES];
+volatile PCB *mem_pq[NUM_PRIORITIES];
 
 typedef struct MemNode {
   uint8_t block_num;
