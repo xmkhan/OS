@@ -14,55 +14,55 @@
 #define NULL (void *)0
 #endif
 
-volatile static Process *p_pq[NUM_PRIORITIES];
-Process *current_process;
+volatile static PCB *p_pq[NUM_PRIORITIES];
+PCB *current_process;
 
-int insert_process_pq(Process* p) {
-  return insert_pq((Process**) p_pq, p);
+int insert_process_pq(PCB* p) {
+  return insert_pq((PCB**) p_pq, p);
 }
-int remove_process_pq(Process* p) {
-    return remove_pq((Process**) p_pq, p);
+int remove_process_pq(PCB* p) {
+    return remove_pq((PCB**) p_pq, p);
 }
 
 int scheduler(void) {
   volatile unsigned int i = 0;
-  volatile Process *pr_head = NULL;
+  volatile PCB *pr_head = NULL;
   for(; i < NUM_PRIORITIES; ++i)
   {
      pr_head = p_pq[i];
-     while (pr_head != NULL && (pr_head->pcb->state != RDY && pr_head->pcb->state != NEW))
+     while (pr_head != NULL && (pr_head->state != RDY && pr_head->state != NEW))
      {
        pr_head = pr_head->next;
      }
-     if (pr_head != NULL) return pr_head->pcb->pid;
+     if (pr_head != NULL) return pr_head->pid;
   }
   return 0; // return NULL Process PID
 }
 
-Process *lookup_pid(int pid) {
-  Process *proc = lookup_pid_pq((Process **)p_pq, pid);
+PCB *lookup_pid(int pid) {
+  PCB *proc = lookup_pid_pq((PCB **)p_pq, pid);
 	if (proc != NULL) {
 		return proc;
 	}
-	if (current_process != NULL && current_process->pcb->pid == pid) {
+	if (current_process != NULL && current_process->pid == pid) {
 		return current_process;
 	}
-	proc = lookup_pid_pq((Process **)mem_pq, pid);
+	proc = lookup_pid_pq((PCB **)mem_pq, pid);
 	return proc; // will be NULL if it doesn't exist here either
 }
 
 int k_get_process_priority(int process_ID) {
-  Process *p = lookup_pid(process_ID);
+  PCB *p = lookup_pid(process_ID);
   if (p == NULL) return -1;
-  return p->pcb->priority;
+  return p->priority;
 }
 
 int k_set_process_priority(int process_ID, int priority) {
-  Process *p = lookup_pid(process_ID);
+  PCB *p = lookup_pid(process_ID);
   if (process_ID == 0 || 
     !(priority >= 0 && priority < NUM_PRIORITIES)) return -1; // don't change priority of null process
-  p->pcb->priority = priority;
-  return p->pcb->priority;
+  p->priority = priority;
+  return p->priority;
 }
 
 void process_init(void) {
@@ -71,48 +71,48 @@ void process_init(void) {
   for (; i < NUM_PROCESSES; ++i)
   {
     process_list[i].pcb->state = NEW;
-    insert_process_pq((Process *)(&(process_list[i])));
+    insert_process_pq(process_list[i].pcb);
   }
   
-  current_process = &(process_list[0]); // null process
-  remove_process_pq((Process*)current_process);
+  current_process = process_list[0].pcb; // null process
+  remove_process_pq((PCB*)current_process);
 }
 
 int k_release_processor(void) {
-   Process *old_process = current_process;
+   PCB *old_process = current_process;
    volatile STATE state;
 	 volatile int pid = scheduler();
    current_process = lookup_pid(pid);
   
 	 if (current_process == NULL) {
-	   return -1;  
+	   return -1;
 	 }
-	 state = current_process->pcb->state;
+	 state = current_process->state;
    
    if (state == NEW) {
-	   if (old_process->pcb->state != NEW) {
-       old_process->pcb->mp_sp = (uint32_t *) __get_MSP();
+	   if (old_process->state != NEW) {
+       old_process->mp_sp = (uint32_t *) __get_MSP();
 
-       if(old_process->pcb->state != BLKD) {
-		     old_process->pcb->state = RDY;
-         insert_process_pq((Process*)old_process);
+       if(old_process->state != BLKD) {
+		     old_process->state = RDY;
+         insert_process_pq((PCB*)old_process);
        }
      }
-     remove_process_pq((Process*)current_process);
-		 current_process->pcb->state = RUN;
-		 __set_MSP((uint32_t) current_process->pcb->mp_sp);
+     remove_process_pq((PCB*)current_process);
+		 current_process->state = RUN;
+		 __set_MSP((uint32_t) current_process->mp_sp);
 		 __rte();  /* pop exception stack frame from the stack for a new process */
 	 } else if (state == RDY) {
-     old_process->pcb->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
+     old_process->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
 		 
-     if(old_process->pcb->state != BLKD)
+     if(old_process->state != BLKD)
      {
-   		 old_process->pcb->state = RDY; 
-       insert_process_pq((Process*)old_process);
+   		 old_process->state = RDY; 
+       insert_process_pq((PCB*)old_process);
      }
-     remove_process_pq((Process*)current_process);
-		 current_process->pcb->state = RUN;
-		 __set_MSP((uint32_t) current_process->pcb->mp_sp); /* switch to the new proc's stack */		
+     remove_process_pq((PCB*)current_process);
+		 current_process->state = RUN;
+		 __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */		
 	 } else {
 	     current_process = old_process; /* revert back to the old proc on error */
 	     return -1;

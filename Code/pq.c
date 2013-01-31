@@ -4,16 +4,15 @@
 #define NULL (void *)0
 #endif
 
-int insert_pq(Process* pq[], Process* p) {
-  volatile Process *pr_head = NULL;
-    if (p == NULL || p->pcb == NULL || 
-      p->pcb->priority >= NUM_PRIORITIES) {
+int insert_pq(PCB* pq[], PCB* p) {
+  volatile PCB *pr_head = NULL;
+    if (p == NULL || p->priority >= NUM_PRIORITIES) {
         return -1;
     }
     
-    pr_head = pq[p->pcb->priority];
+    pr_head = pq[p->priority];
     if (pr_head == NULL){
-      pq[p->pcb->priority] = p;
+      pq[p->priority] = p;
     } else {
       while(pr_head->next != NULL)
       {
@@ -25,14 +24,13 @@ int insert_pq(Process* pq[], Process* p) {
     return 0;
 }
 
-int remove_pq(Process* pq[], Process* p) {
-  volatile Process *pr_head = NULL;
-  if (p == NULL || p->pcb == NULL || 
-    p->pcb->priority >= NUM_PRIORITIES) {
+int remove_pq(PCB* pq[], PCB* p) {
+  volatile PCB *pr_head = NULL;
+  if (p == NULL || p->priority >= NUM_PRIORITIES) {
       return -1;
   }
     
-  pr_head = pq[p->pcb->priority];
+  pr_head = pq[p->priority];
   if (pr_head != p)
   {
     while(pr_head->next != p) {
@@ -41,15 +39,15 @@ int remove_pq(Process* pq[], Process* p) {
     pr_head->next = p->next;
   } else
   {
-    pq[p->pcb->priority] = pr_head->next;
+    pq[p->priority] = pr_head->next;
     //pr_head->pcb->state = EXIT;
   }
   return 0;
 }
 
-Process* get_process(Process *pq[]) {
+PCB* get_process(PCB *pq[]) {
   volatile unsigned int i = 0;
-  volatile Process *pr_head = NULL;
+  volatile PCB *pr_head = NULL;
   for(; i < NUM_PRIORITIES; ++i)
   {
      pr_head = pq[i];
@@ -57,22 +55,22 @@ Process* get_process(Process *pq[]) {
      {
        pr_head = pr_head->next;
      }
-     if (pr_head != NULL) return (Process*) pr_head;
+     if (pr_head != NULL) return (PCB*) pr_head;
   }
   return 0; // return NULL
 }
 
-Process *lookup_pid_pq(Process* pq[], int pid) {
+PCB *lookup_pid_pq(PCB* pq[], int pid) {
   volatile unsigned int i = 0;
-  volatile Process *pr_head = NULL;
+  volatile PCB *pr_head = NULL;
   for(; i < NUM_PRIORITIES; ++i)
   {
      pr_head = pq[i];
-     while (pr_head != NULL && pr_head->pcb->pid != pid)
+     while (pr_head != NULL && pr_head->pid != pid)
      {
        pr_head = pr_head->next;
      }
-     if (pr_head != NULL) return (Process *)pr_head;
+     if (pr_head != NULL) return (PCB *)pr_head;
   }
   return (void *)0;
 }

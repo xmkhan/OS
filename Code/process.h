@@ -18,20 +18,20 @@ typedef struct PCB {
   STATE state;
   uint32_t *mp_sp; /* stack pointer of the process */
   uint8_t importance;
+	struct PCB *next;
 } PCB;
 
 typedef struct Process {
   PCB *pcb;
   uint32_t start_loc;
   uint32_t *stack;
-  struct Process* next;
 } Process;
 
-extern Process *current_process;
+extern PCB *current_process;
 
 void process_init(void);
-int insert_process_pq(Process* p);
-int remove_process_pq(Process* p);
+int insert_process_pq(PCB* pcb);
+int remove_process_pq(PCB* pcb);
 
 extern int k_release_processor(void);
 #define release_processor() _release_processor((unsigned int)k_release_processor)
