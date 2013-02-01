@@ -17,16 +17,6 @@ static int NUM_MEMORY_BLOCKS;
 // PQ storing PCBs which are blocked due to no memory available during request memory
 volatile PCB *mem_pq[NUM_PRIORITIES];
 
-// MemNode struct which contains information about the memory block,
-// and is stored as a memory at the start of each memory block
-typedef struct MemNode {
-  uint8_t block_num;
-  uint8_t used;
-  unsigned int address;
-    
-	struct MemNode *next;
-} MemNode;
-
 // Starting of memory pq
 static MemNode* memory_list = 0;
 

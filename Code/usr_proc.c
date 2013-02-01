@@ -78,7 +78,29 @@ void proc1(void)
 {
   volatile int i = 0;
   volatile int ret_val = 10;
-  void *a = request_memory_block();
+  volatile void *a = request_memory_block();
+	volatile int *int1 = (int *)request_memory_block();
+	volatile int *int2 = (int *)request_memory_block();
+	
+	*int1 = 42;
+	if (*int1 == 42) {
+		NUM_TESTS_PASSED++;
+		TEST1 = 1;
+	}
+	else {
+		NUM_TESTS_FAILED++;
+		TEST1 = 3;
+	}
+	
+	if ((uint32_t)int2 - (uint32_t)int1 == (uint32_t)MEMORY_BLOCK_SIZE + (uint32_t)sizeof(MemNode)) {
+		NUM_TESTS_PASSED++;
+		TEST2 = 1;
+	}
+	else {
+		NUM_TESTS_FAILED++;
+		TEST2 = 3;
+	}
+	
   while (1) {
 		a = request_memory_block();
   }
@@ -100,6 +122,44 @@ void proc2(void)
 {
   volatile int i = 0;
   volatile int ret_val = 20;
+	
+	// values get stored in memory correctly?
+	if (TEST1 == 1) {
+		TEST1 = 2;
+#ifdef DEBUG
+		printf("\n\rG013_test: test 1 OK");
+#else
+		uart0_put_string("\n\rG013_test: test 1 OK");
+#endif
+	}
+	else if (TEST1 == 3) {
+		TEST1 = 4;
+#ifdef DEBUG
+		printf("\n\rG013_test: test 1 FAIL");
+#else
+		uart0_put_string("\n\rG013_test: test 1 FAIL");
+#endif
+	}
+	
+	// memory offsets correct?
+	if (TEST2 == 1) {
+		TEST2 = 2;
+#ifdef DEBUG
+		printf("\n\rG013_test: test 2 OK");
+#else
+		uart0_put_string("\n\rG013_test: test 2 OK");
+#endif
+	}
+	else if (TEST2 == 3) {
+		TEST2 = 4;
+#ifdef DEBUG
+		printf("\n\rG013_test: test 2 FAIL");
+#else
+		uart0_put_string("\n\rG013_test: test 2 FAIL");
+#endif
+	}
+	
+	// blocking from out of memory worked?
 	if (!TEST3) {
 		TEST3 = 1;
 		NUM_TESTS_PASSED++;
@@ -231,17 +291,17 @@ void proc6(void)
 			if (!TESTEND) {
 #ifdef DEBUG
 			TESTEND = 1;
-			printf("\n\rG013_test: %d/5 tests OK", NUM_TESTS_PASSED);
-			printf("\n\rG013_test: %d/5 tests FAIL", NUM_TESTS_FAILED);
+			printf("\n\rG013_test: %d/7 tests OK", NUM_TESTS_PASSED);
+			printf("\n\rG013_test: %d/7 tests FAIL", NUM_TESTS_FAILED);
 			printf("\n\rG013_test: END");
 #else
 			TESTEND = 1;
 			uart0_put_string("\n\rG013_test: ");
 			uart0_put_char(NUM_TESTS_PASSED+48);
-			uart0_put_string("/5 tests OK");
+			uart0_put_string("/7 tests OK");
 			uart0_put_string("\n\rG013_test: ");
 			uart0_put_char(NUM_TESTS_FAILED+48);
-			uart0_put_string("/5 tests FAIL");
+			uart0_put_string("/7 tests FAIL");
 			uart0_put_string("\n\rG013_test: END");
 #endif
 		}
