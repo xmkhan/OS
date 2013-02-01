@@ -14,7 +14,7 @@
 #define NULL (void *)0
 #endif
 
-volatile static PCB *p_pq[NUM_PRIORITIES];
+volatile static PCB *p_pq[NUM_PRIORITIES]; // PCB PQ
 PCB *current_process;
 
 int insert_process_pq(PCB* p) {
@@ -24,6 +24,10 @@ int remove_process_pq(PCB* p) {
     return remove_pq((PCB**) p_pq, p);
 }
 
+/**
+ * Select the next process to be scheduled
+ * @return  PID
+ */
 int scheduler(void) {
   volatile unsigned int i = 0;
   volatile PCB *pr_head = NULL;
@@ -39,6 +43,9 @@ int scheduler(void) {
   return 0; // return NULL Process PID
 }
 
+/**
+ * Look up PCB from its PID
+ */
 PCB *lookup_pid(int pid) {
   PCB *proc = lookup_pid_pq((PCB **)p_pq, pid);
 	if (proc != NULL) {
@@ -51,20 +58,29 @@ PCB *lookup_pid(int pid) {
 	return proc; // will be NULL if it doesn't exist here either
 }
 
+/**
+ * Get process priority
+ */
 int k_get_process_priority(int process_ID) {
   PCB *p = lookup_pid(process_ID);
   if (p == NULL) return -1;
   return p->priority;
 }
 
+/**
+ * Set process priority
+ */
 int k_set_process_priority(int process_ID, int priority) {
   PCB *p = lookup_pid(process_ID);
-  if (process_ID == 0 || 
+  if (process_ID == 0 ||
     !(priority >= 0 && priority < NUM_PRIORITIES)) return -1; // don't change priority of null process
   p->priority = priority;
   return p->priority;
 }
 
+/**
+ * Initializes the process module
+ */
 void process_init(void) {
   volatile unsigned int i = 0;
     __initialize_processes();
@@ -73,22 +89,26 @@ void process_init(void) {
     process_list[i].pcb->state = NEW;
     insert_process_pq(process_list[i].pcb);
   }
-  
+
   current_process = process_list[0].pcb; // null process
   remove_process_pq((PCB*)current_process);
 }
 
+/**
+ * Handles context switching and managing process STATE
+ * @return  [0 successful, -1 for error]
+ */
 int k_release_processor(void) {
    PCB *old_process = current_process;
    volatile STATE state;
 	 volatile int pid = scheduler();
    current_process = lookup_pid(pid);
-  
+
 	 if (current_process == NULL) {
 	   return -1;
 	 }
 	 state = current_process->state;
-   
+
    if (state == NEW) {
 	   if (old_process->state != NEW) {
        old_process->mp_sp = (uint32_t *) __get_MSP();
@@ -104,18 +124,18 @@ int k_release_processor(void) {
 		 __rte();  /* pop exception stack frame from the stack for a new process */
 	 } else if (state == RDY) {
      old_process->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
-		 
+
      if(old_process->state != BLKD)
      {
-   		 old_process->state = RDY; 
+   		 old_process->state = RDY;
        insert_process_pq((PCB*)old_process);
      }
      remove_process_pq((PCB*)current_process);
 		 current_process->state = RUN;
-		 __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */		
+		 __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */
 	 } else {
 	     current_process = old_process; /* revert back to the old proc on error */
 	     return -1;
-	 } 
+	 }
 	return 0;
 }
