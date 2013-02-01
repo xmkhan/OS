@@ -234,8 +234,12 @@ void proc6(void)
 			printf("\n\rG013_test: END");
 #else
 			TESTEND = 1;
-			uart0_put_string("\n\rG013_test: /5 tests OK");
-			uart0_put_string("\n\rG013_test: /5 tests FAIL");
+			uart0_put_string("\n\rG013_test: ");
+			uart0_put_char(NUM_TESTS_PASSED+48);
+			uart0_put_string("/5 tests OK");
+			uart0_put_string("\n\rG013_test: ");
+			uart0_put_char(NUM_TESTS_FAILED+48);
+			uart0_put_string("/5 tests FAIL");
 			uart0_put_string("\n\rG013_test: END");
 #endif
 		}
