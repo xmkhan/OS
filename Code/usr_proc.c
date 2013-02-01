@@ -11,6 +11,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
+// test state variables
 int TEST1 = 0;
 int TEST2 = 0;
 int TEST3 = 0;
@@ -22,15 +23,17 @@ int TESTEND = 0;
 int NUM_TESTS_PASSED = 0;
 int NUM_TESTS_FAILED = 0;
 
+// process list
 PCB *pcb_list[NUM_PROCESSES];
 Process process_list[NUM_PROCESSES];
 
 typedef void (*process_ptr)(void);
 
+// set up each process (including null) and their stack frames
 void __initialize_processes(void) {
   uint32_t *sp = (void *)0;
   volatile unsigned int i = 0, j = 0, k = 0;  
-    
+  
   process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
   int priority_t[] = {4, 0, 1, 1, 1, 1, 1};
 
@@ -65,6 +68,7 @@ void __initialize_processes(void) {
   }
 }
 
+// null process: simply release processor
 void null_process(void) {
   while(1) {
     volatile int ret_val = release_processor();
@@ -74,6 +78,8 @@ void null_process(void) {
   }
 }
 
+// process 1: request two memory blocks and test assignment/position difference,
+// then request all remaining memory until process gets blocked
 void proc1(void)
 {
   volatile int i = 0;
@@ -118,6 +124,7 @@ void proc1(void)
 	}
 }
 
+// process 2: called after proc1 gets blocked, test proc1 results
 void proc2(void)
 {
   volatile int i = 0;
@@ -196,6 +203,7 @@ void proc2(void)
 	}
 }
 
+// process 3: test get process priority
 void proc3(void)
 {
   volatile int i = 0;
@@ -228,6 +236,7 @@ void proc3(void)
 	}
 }
 
+// process 4: set process priority, then block by requesting memory (already gone from proc1)
 void proc4(void)
 {
 	static volatile int counter = 0;
@@ -241,6 +250,7 @@ void proc4(void)
 	}
 }
 
+// process 5: test registers/general variable allocation and results of proc4
 void proc5(void)
 {
   volatile int ret_val = 20;
@@ -283,6 +293,7 @@ void proc5(void)
   }
 }
 
+// process 6: end of tests, print results
 void proc6(void)
 {
 	volatile int ret_val = 20;
