@@ -33,10 +33,10 @@ int main() {
   // Output test results
 #ifdef DEBUG
 	printf("\n\rG013_test: START");
-	printf("\n\rG013_test: total 5 tests");
+	printf("\n\rG013_test: total 7 tests");
 #else
 	uart0_put_string("\n\rG013_test: START");
-	uart0_put_string("\n\rG013_test: total 5 tests");
+	uart0_put_string("\n\rG013_test: total 7 tests");
 #endif
   ret_val = release_processor();
 

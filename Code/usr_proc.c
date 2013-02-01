@@ -16,6 +16,8 @@ int TEST2 = 0;
 int TEST3 = 0;
 int TEST4 = 0;
 int TEST5 = 0;
+int TEST6 = 0;
+int TEST7 = 0;
 int TESTEND = 0;
 int NUM_TESTS_PASSED = 0;
 int NUM_TESTS_FAILED = 0;
@@ -80,13 +82,13 @@ void proc1(void)
   while (1) {
 		a = request_memory_block();
   }
-	if (!TEST1) {
-		TEST1 = 1;
+	if (!TEST3) {
+		TEST3 = 1;
 		NUM_TESTS_FAILED++;
 #ifdef DEBUG
-		printf("\n\rG013_test: test 1 FAIL");
+		printf("\n\rG013_test: test 3 FAIL");
 #else
-		uart0_put_string("\n\rG013_test: test 1 FAIL");
+		uart0_put_string("\n\rG013_test: test 3 FAIL");
 #endif
 	}
 	while (1) {
@@ -98,34 +100,34 @@ void proc2(void)
 {
   volatile int i = 0;
   volatile int ret_val = 20;
-	if (!TEST1) {
-		TEST1 = 1;
+	if (!TEST3) {
+		TEST3 = 1;
 		NUM_TESTS_PASSED++;
 #ifdef DEBUG
-		printf("\n\rG013_test: test 1 OK");
+		printf("\n\rG013_test: test 3 OK");
 #else
-		uart0_put_string("\n\rG013_test: test 1 OK");
+		uart0_put_string("\n\rG013_test: test 3 OK");
 #endif
 	}
 	i = set_process_priority(2, 4);
 	if (i == -1) {
-		if (!TEST2) {
-			TEST2 = 1;
+		if (!TEST4) {
+			TEST4 = 1;
 			NUM_TESTS_PASSED++;
 #ifdef DEBUG
-			printf("\n\rG013_test: test 2 OK");
+			printf("\n\rG013_test: test 4 OK");
 #else
-			uart0_put_string("\n\rG013_test: test 2 OK");
+			uart0_put_string("\n\rG013_test: test 4 OK");
 #endif
 		}
 	} else {
-		if (!TEST2) {
-			TEST2 = 1;
+		if (!TEST4) {
+			TEST4 = 1;
 			NUM_TESTS_FAILED++;
 #ifdef DEBUG
-			printf("\n\rG013_test: test 2 FAIL");
+			printf("\n\rG013_test: test 4 FAIL");
 #else
-			uart0_put_string("\n\rG013_test: test 2 FAIL");
+			uart0_put_string("\n\rG013_test: test 4 FAIL");
 #endif
 		}
 	}
@@ -140,24 +142,24 @@ void proc3(void)
   volatile int ret_val = 20;
   i = get_process_priority(3);
 	if (i == 1) {
-		if (!TEST3) {
-			TEST3 = 1;
+		if (!TEST5) {
+			TEST5 = 1;
 			NUM_TESTS_PASSED++;
 #ifdef DEBUG
-			printf("\n\rG013_test: test 3 OK");
+			printf("\n\rG013_test: test 5 OK");
 #else
-			uart0_put_string("\n\rG013_test: test 3 OK");
+			uart0_put_string("\n\rG013_test: test 5 OK");
 #endif
 		}
 	}
 	else {
-		if (!TEST3) {
-			TEST3 = 1;
+		if (!TEST5) {
+			TEST5 = 1;
 			NUM_TESTS_FAILED++;
 #ifdef DEBUG
-			printf("\n\rG013_test: test 3 FAIL");
+			printf("\n\rG013_test: test 5 FAIL");
 #else
-			uart0_put_string("\n\rG013_test: test 3 FAIL");
+			uart0_put_string("\n\rG013_test: test 5 FAIL");
 #endif
 		}
 	}
@@ -185,36 +187,36 @@ void proc5(void)
 	int a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7, h = 8, i = 9, j = 10,
 		k = 11, l = 12, m = 13, n = 14, o = 15, p = 16, q = 17, r = 18, s = 19, t = 20,
 		u = 21, v = 22, w = 23, x = 24, y = 25, z = 26;
-		if (!TEST4) {
-			TEST4 = 1;
+		if (!TEST6) {
+			TEST6 = 1;
 			NUM_TESTS_PASSED++;
 #ifdef DEBUG
-			printf("\n\rG013_test: test 4 OK");
+			printf("\n\rG013_test: test 6 OK");
 #else
-			uart0_put_string("\n\rG013_test: test 4 OK");
+			uart0_put_string("\n\rG013_test: test 6 OK");
 #endif
 		}
   while (1) {
     ret_val = release_processor();
-		if (!TEST5) {
-			TEST5 = 1;
+		if (!TEST7) {
+			TEST7 = 1;
 			if (a == 1 && b == 2 && c == 3 && d == 4 && e == 5 && f == 6 && g == 7 && h == 8
 				&& i == 9 && j == 10 && k == 11 && l == 12 && m == 13 && n == 14 && o == 15 && p == 16
 				&& q == 17 && r == 18 && s == 19 && t == 20 && u == 21 && v == 22 && w == 23 && x == 24
 				&& y == 25 && z == 26) {
 					NUM_TESTS_PASSED++;
 #ifdef DEBUG
-					printf("\n\rG013_test: test 5 OK");
+					printf("\n\rG013_test: test 7 OK");
 #else
-					uart0_put_string("\n\rG013_test: test 5 OK");
+					uart0_put_string("\n\rG013_test: test 7 OK");
 #endif
 				}
 				else {
 					NUM_TESTS_FAILED++;
 #ifdef DEBUG
-					printf("\n\rG013_test: test 5 FAIL");
+					printf("\n\rG013_test: test 7 FAIL");
 #else
-					uart0_put_string("\n\rG013_test: test 5 FAIL");
+					uart0_put_string("\n\rG013_test: test 7 FAIL");
 #endif
 				}
 			}
