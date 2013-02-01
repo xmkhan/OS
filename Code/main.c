@@ -11,6 +11,7 @@
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
+// Perform intialization of different modules
 void __init()
 {
    memory_init();
@@ -20,6 +21,7 @@ void __init()
 int main() {
   volatile unsigned int ret_val = 1234;
 
+  // performe initalization
 	SystemInit();
   __disable_irq();
  	uart0_init();
@@ -28,6 +30,7 @@ int main() {
   
   __set_CONTROL(__get_CONTROL() | BIT(0)); 
   
+  // Output test results
 #ifdef DEBUG
 	printf("\n\rG013_test: START");
 	printf("\n\rG013_test: total 5 tests");
