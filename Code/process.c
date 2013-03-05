@@ -95,13 +95,21 @@ void process_init(void) {
 }
 
 /**
- * Handles context switching and managing process STATE
+ * Handles context switching and managing process STATE to next scheduled process
  * @return  [0 successful, -1 for error]
  */
 int k_release_processor(void) {
+ 	 volatile int pid = scheduler();
+   return k_context_switch(pid);
+}
+
+/**
+ * Handles context switching and managing process STATE to given pid
+ * @return  [0 successful, -1 for error]
+ */
+int k_context_switch(int pid) {
    PCB *old_process = current_process;
    volatile STATE state;
-	 volatile int pid = scheduler();
    current_process = lookup_pid(pid);
 
 	 if (current_process == NULL) {
