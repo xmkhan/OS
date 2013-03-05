@@ -446,6 +446,11 @@
               <FileType>1</FileType>
               <FilePath>.\usr_proc.c</FilePath>
             </File>
+            <File>
+              <FileName>pq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\pq.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -465,6 +470,11 @@
               <FileName>usr_proc.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\usr_proc.h</FilePath>
+            </File>
+            <File>
+              <FileName>pq.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\pq.h</FilePath>
             </File>
           </Files>
         </Group>
