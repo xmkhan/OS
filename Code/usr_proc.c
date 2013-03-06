@@ -50,7 +50,7 @@ void __initialize_processes(void) {
     process_list[i].start_loc = (uint32_t)process_t[i];
     process_list[i].pcb->next = (void *)0;
     
-    sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE_HEX);
+    sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE);
     
     /* 8 bytes alignement adjustment to exception stack frame */
     if (!(((uint32_t)sp) & 0x04)) {
