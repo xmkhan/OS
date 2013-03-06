@@ -48,7 +48,7 @@ int scheduler(void) {
  */
 PCB *lookup_pid(int pid) {
   int i;
-  for (i =0; i < NUM_PRIORITIES; ++i) {
+  for (i =0; i < NUM_PROCESSES; ++i) {
     if (pcb_list[i]->pid == pid) return pcb_list[i];
   }
 	return (void *)0;
