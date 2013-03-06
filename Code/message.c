@@ -69,7 +69,7 @@ void *receive_message(int *sender_ID) {
   while(current_process->head == (void *)0) { // We have yet to receive any msgs
     // Move process from ready_queue to blocking_msg_queue
     dest_proc = lookup_pid_pq((PCB **)msg_pq, current_process->pid);
-    if (dest_proc == NULL) { // PCB has not been added to the blocking msg_pq
+    if (dest_proc == (void *)0) { // PCB has not been added to the blocking msg_pq
       remove_process_pq(current_process);
       current_process->state = BLKD; // Set state to BLKD
       enqueue_q(msg_pq, current_process, PCB_T);
