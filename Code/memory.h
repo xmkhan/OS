@@ -20,8 +20,6 @@ typedef struct MemNode {
 	struct MemNode *next;
 } MemNode;
 
-//Stores PCB's of processes which are currently blocked due to memory request event
-extern volatile PCB *mem_pq[];
 
 // Initialize memory module
 void memory_init(void);
