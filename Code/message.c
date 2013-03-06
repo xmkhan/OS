@@ -30,11 +30,17 @@ int send_message(int process_ID, void *MessageEnvelope) {
   // msg->time_stamp = get_current_time();
   
   
-  dest_proc = lookup_pid_pq((PCB **)msg_pq, process_ID);
+  dest_proc = lookup_pid(process_ID);
+  
+  // If it doesn't exist in our ready queue, check BLKD msg queue
+  if (dest_proc == (void *)0) {
+    dest_proc = lookup_pid_pq((PCB **)msg_pq, process_ID);
+  }
   
   if (dest_proc != (void *)0) {
     enqueue_q(dest_proc->head, msg, MSG_T); // enqueue the msg to the destination_proc's queue
   }
+  
   
   if (dest_proc != (void *)0 && dest_proc->state == BLKD) {
     // Handle unblocking of destination process.

@@ -43,6 +43,7 @@ extern PCB *current_process;
 void process_init(void);
 int insert_process_pq(PCB* pcb);
 int remove_process_pq(PCB* pcb);
+PCB *lookup_pid(int pid);
 
 /**
  * API: release_processor
