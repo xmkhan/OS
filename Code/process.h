@@ -3,6 +3,7 @@
 
 #include <LPC17xx.h>
 #include "uart_polling.h"
+#include "message.h"
 
 #ifndef __SVC_0
 #define __SVC_0  __svc_indirect(0)
@@ -21,8 +22,8 @@ typedef struct PCB {
   uint8_t priority;
   STATE state;
   uint32_t *mp_sp; /* stack pointer of the process */
-  uint8_t importance;
 	struct PCB *next;
+  MSG *head; /* MSG_QUEUE (mailbox) */
 } PCB;
 
 /**
@@ -42,6 +43,7 @@ extern PCB *current_process;
 void process_init(void);
 int insert_process_pq(PCB* pcb);
 int remove_process_pq(PCB* pcb);
+PCB *lookup_pid(int pid);
 
 /**
  * API: release_processor

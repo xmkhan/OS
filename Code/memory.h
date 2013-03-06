@@ -9,7 +9,6 @@
 
 // Configuration parameters for memory
 #define MEMORY_BLOCK_SIZE 128
-#define MEMORY_BLOCK_SIZE_HEX 0x80
 
 // MemNode struct which contains information about the memory block,
 // and is stored as a memory at the start of each memory block
@@ -21,8 +20,6 @@ typedef struct MemNode {
 	struct MemNode *next;
 } MemNode;
 
-//Stores PCB's of processes which are currently blocked due to memory request event
-extern volatile PCB *mem_pq[];
 
 // Initialize memory module
 void memory_init(void);
