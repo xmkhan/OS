@@ -48,6 +48,7 @@ int remove_process_pq(PCB* pcb);
  * API: release_processor
  * Call for context switching, switches to next RDY process in line
  */
+extern int k_context_switch(int pid);
 extern int k_release_processor(void);
 #define release_processor() _release_processor((unsigned int)k_release_processor)
 extern int _release_processor(unsigned int p_func) __SVC_0;
