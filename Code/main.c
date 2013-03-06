@@ -8,6 +8,7 @@
 
 #include "memory.h"
 #include "process.h"
+#include "message.h"
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
@@ -16,6 +17,7 @@ void __init()
 {
    memory_init();
    process_init();
+   message_init();
 }
 
 int main() {

@@ -47,15 +47,11 @@ int scheduler(void) {
  * Look up PCB from its PID
  */
 PCB *lookup_pid(int pid) {
-  PCB *proc = lookup_pid_pq((PCB **)p_pq, pid);
-	if (proc != NULL) {
-		return proc;
-	}
-	if (current_process != NULL && current_process->pid == pid) {
-		return current_process;
-	}
-	proc = lookup_pid_pq((PCB **)mem_pq, pid);
-	return proc; // will be NULL if it doesn't exist here either
+  int i;
+  for (i =0; i < NUM_PRIORITIES; ++i) {
+    if (pcb_list[i]->pid == pid) return pcb_list[i];
+  }
+	return (void *)0;
 }
 
 /**
