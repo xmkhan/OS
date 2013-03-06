@@ -47,7 +47,7 @@ int send_message(int process_ID, void *MessageEnvelope) {
   semSignal(&s);
   
   if (dest_proc != (void *)0 && dest_proc->priority < current_process->priority) {
-    k_release_processor();
+    k_release_processor(); // Destination process has a higher priority, release processor
   }
   
   return 0;
@@ -55,20 +55,23 @@ int send_message(int process_ID, void *MessageEnvelope) {
 
 void *receive_message(int *sender_ID) {
   MSG *msg = (void *) 0;
+  
   semWait(&r);
   __disable_irq();
   
-  while(current_process->head == (void *)0) {
+  while(current_process->head == (void *)0) { // We have yet to receive any msgs
+    // Move process from ready_queue to blocking_msg_queue
     remove_process_pq(current_process);
-    current_process->state = BLKD;
+    current_process->state = BLKD; // Set state to BLKD
     enqueue_q(msg_pq, current_process, PCB_T);
-    k_release_processor();
+    k_release_processor(); // Release this process as it is blocked
   }
-  msg = dequeue_q(current_process->head, MSG_T);
-  *sender_ID = msg->sender_pid;
+  msg = dequeue_q(current_process->head, MSG_T); // We have acquired a 'msg'
+  *sender_ID = msg->sender_pid; // Fill in the sender_ID 
   
   __enable_irq();
   semSignal(&r);
+  
   return msg;
 }
 

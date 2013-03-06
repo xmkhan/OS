@@ -8,7 +8,7 @@ void semInit(semaphore *s) {
 
 void semWait(semaphore *s) {
   s->count--;
-  if (s->count < 0) {
+  if (s->count < 0) { 
     current_process->state = BLKD;
     remove_process_pq(current_process);
     enqueue_q(s->queue, current_process, PCB_T);

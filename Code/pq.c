@@ -104,12 +104,12 @@ int enqueue_q(void* pq_generic, void* p_generic, q_type type) {
     PCB *pq = (PCB *) pq_generic;
     PCB *p = (PCB *) p_generic;
     PCB *head = pq;
-    p->next = NULL;
-    if (head == NULL) {
+    p->next = NULL; // Set entry to be added to NULL
+    if (head == NULL) { // Base case, empty queue
       pq = p;
       return 0;
     }
-    while (head->next != NULL) {
+    while (head->next != NULL) { // Traverse to the end
       head = head->next;
     }
     head->next = p;
@@ -117,12 +117,12 @@ int enqueue_q(void* pq_generic, void* p_generic, q_type type) {
     MSG *pq = (MSG *) pq_generic;
     MSG *p = (MSG *) p_generic;
     MSG *head = pq;
-    p->next = NULL;
-    if (head == NULL) {
+    p->next = NULL; // Set entry to be added to NULL
+    if (head == NULL) { // Base case, empty queue
       pq = p;
       return 0;
     }
-    while (head->next != NULL) {
+    while (head->next != NULL) { // Traverse to the end
       head = head->next;
     }
     head->next = p;
@@ -135,12 +135,12 @@ void *dequeue_q(void* pq_generic, q_type type) {
   if (type == PCB_T) {
     PCB *pq = (PCB *) pq_generic;
     PCB *p = pq; 
-    pq = pq->next;
+    pq = pq->next; // Move the head to the next element
     return p;
   } else if (type == MSG_T) {
     MSG *pq = (MSG *) pq_generic;
     MSG *p = pq;
-    pq = pq->next;
+    pq = pq->next; // Move the head to the next element
     return p;
   }
 

@@ -14,8 +14,10 @@ int remove_pq(PCB* pq[], PCB* p);
 PCB *get_process(PCB* pq[]);
 PCB *lookup_pid_pq(PCB* pq[], int pid);
 
+// Handling generic PCB and MSG structures
 typedef enum { PCB_T=0, MSG_T } q_type;
 
+// Standard queue add/remove functions
 int enqueue_q(void* pq, void* p, q_type type);
 void *dequeue_q(void* pq, q_type type);
 

@@ -23,7 +23,7 @@ typedef struct PCB {
   STATE state;
   uint32_t *mp_sp; /* stack pointer of the process */
 	struct PCB *next;
-  MSG *head;
+  MSG *head; /* MSG_QUEUE (mailbox) */
 } PCB;
 
 /**
