@@ -17,6 +17,7 @@ void message_init(void) {
 MSG *get_message_pid(int process_ID) {
   PCB *pcb = lookup_pid(process_ID);
   if (pcb != (void *)0) {
+    dequeue_q(pcb->head, MSG_T);
     return pcb->head;
   }
   return (void *)0;
@@ -24,6 +25,7 @@ MSG *get_message_pid(int process_ID) {
 
 MSG *get_message(PCB *pcb) {
   if (pcb != (void *)0) {
+    dequeue_q(pcb->head, MSG_T);
     return pcb->head;
   }
   return (void *)0;
