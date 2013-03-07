@@ -3,8 +3,11 @@
 #include "process.h"
 #include "usr_proc.h"
 
-#define NUM_STATES 5
-#define COL_SIZE   10 
+#define NUM_STATES  5
+#define COL_SIZE    10 
+#define BUFFER_SIZE 10
+
+static char buffer[BUFFER_SIZE];
 
 /**
  * System function available to processes
@@ -54,13 +57,17 @@ void int_to_char_star(int input, volatile char* buffer) {
   *buffer   = '\0';
 }
 
+void crt_output_int(int input) {
+  int_to_char_star(input, buffer);
+  crt_proc(buffer);
+}
+
 /*
  * handle hot-key key press 
  */
 void hot_key_handler(void) {
   char* header = "\nProc_id  Priority Status\n\0";
   int i = 0, j=0, n = 0, col_empty = 0;
-  volatile static char buffer[10];
   PCB *iterate;  
   
   //States' char* representation

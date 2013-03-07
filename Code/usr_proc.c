@@ -1,6 +1,5 @@
 #include "process.h"
 #include "memory.h"
-//#include "uart_polling.h"
 #include "usr_proc.h"
 #include "crt_display.h"
 
@@ -72,9 +71,8 @@ void __initialize_processes(void) {
 void null_process(void) {
   while(1) {
     volatile int ret_val = release_processor();
-#ifdef DEBUG
-      printf("\n\rnull_proc: ret_val=%d. ", ret_val);
-#endif
+    crt_proc("\n\rnull_proc: ret_val=");
+    crt_output_int(ret_val); 
   }
 }
 
@@ -113,11 +111,7 @@ void proc1(void)
 	if (!TEST3) {
 		TEST3 = 1;
 		NUM_TESTS_FAILED++;
-#ifdef DEBUG
-		printf("\n\rG013_test: test 3 FAIL");
-#else
-		//uart0_put_string("\n\rG013_test: test 3 FAIL");
-#endif
+    crt_proc("\n\rG013_test: test 3 FAIL");
 	}
 	while (1) {
 		ret_val = release_processor();
@@ -133,69 +127,41 @@ void proc2(void)
 	// values get stored in memory correctly?
 	if (TEST1 == 1) {
 		TEST1 = 2;
-#ifdef DEBUG
-		printf("\n\rG013_test: test 1 OK");
-#else
-		//uart0_put_string("\n\rG013_test: test 1 OK");
-#endif
+    crt_proc("\n\rG013_test: test 1 OK");
 	}
 	else if (TEST1 == 3) {
 		TEST1 = 4;
-#ifdef DEBUG
-		printf("\n\rG013_test: test 1 FAIL");
-#else
-		//uart0_put_string("\n\rG013_test: test 1 FAIL");
-#endif
+    crt_proc("\n\rG013_test: test 1 FAIL");
 	}
 	
 	// memory offsets correct?
 	if (TEST2 == 1) {
 		TEST2 = 2;
-#ifdef DEBUG
-		printf("\n\rG013_test: test 2 OK");
-#else
-		//uart0_put_string("\n\rG013_test: test 2 OK");
-#endif
+    crt_proc("\n\rG013_test: test 2 OK");
 	}
 	else if (TEST2 == 3) {
 		TEST2 = 4;
-#ifdef DEBUG
-		printf("\n\rG013_test: test 2 FAIL");
-#else
-		//uart0_put_string("\n\rG013_test: test 2 FAIL");
-#endif
+    crt_proc("\n\rG013_test: test 2 FAIL");
 	}
 	
 	// blocking from out of memory worked?
 	if (!TEST3) {
 		TEST3 = 1;
 		NUM_TESTS_PASSED++;
-#ifdef DEBUG
-		printf("\n\rG013_test: test 3 OK");
-#else
-		//uart0_put_string("\n\rG013_test: test 3 OK");
-#endif
+    crt_proc("\n\rG013_test: test 3 OK");
 	}
 	i = set_process_priority(2, 4);
 	if (i == -1) {
 		if (!TEST4) {
 			TEST4 = 1;
 			NUM_TESTS_PASSED++;
-#ifdef DEBUG
-			printf("\n\rG013_test: test 4 OK");
-#else
-			//uart0_put_string("\n\rG013_test: test 4 OK");
-#endif
+      crt_proc("\n\rG013_test: test 4 OK");
 		}
 	} else {
 		if (!TEST4) {
 			TEST4 = 1;
 			NUM_TESTS_FAILED++;
-#ifdef DEBUG
-			printf("\n\rG013_test: test 4 FAIL");
-#else
-			//uart0_put_string("\n\rG013_test: test 4 FAIL");
-#endif
+      crt_proc("\n\rG013_test: test 4 FAIL");
 		}
 	}
 	while (1) {
@@ -213,22 +179,14 @@ void proc3(void)
 		if (!TEST5) {
 			TEST5 = 1;
 			NUM_TESTS_PASSED++;
-#ifdef DEBUG
-			printf("\n\rG013_test: test 5 OK");
-#else
-			//uart0_put_string("\n\rG013_test: test 5 OK");
-#endif
+      crt_proc("\n\rG013_test: test 5 OK");
 		}
 	}
 	else {
 		if (!TEST5) {
 			TEST5 = 1;
 			NUM_TESTS_FAILED++;
-#ifdef DEBUG
-			printf("\n\rG013_test: test 5 FAIL");
-#else
-			//uart0_put_string("\n\rG013_test: test 5 FAIL");
-#endif
+      crt_proc("\n\rG013_test: test 5 FAIL");
 		}
 	}
 	while (1) {
@@ -260,11 +218,7 @@ void proc5(void)
 		if (!TEST6) {
 			TEST6 = 1;
 			NUM_TESTS_PASSED++;
-#ifdef DEBUG
-			printf("\n\rG013_test: test 6 OK");
-#else
-			//uart0_put_string("\n\rG013_test: test 6 OK");
-#endif
+      crt_proc("\n\rG013_test: test 6 OK");
 		}
   while (1) {
     ret_val = release_processor();
@@ -275,19 +229,11 @@ void proc5(void)
 				&& q == 17 && r == 18 && s == 19 && t == 20 && u == 21 && v == 22 && w == 23 && x == 24
 				&& y == 25 && z == 26) {
 					NUM_TESTS_PASSED++;
-#ifdef DEBUG
-					printf("\n\rG013_test: test 7 OK");
-#else
-					//uart0_put_string("\n\rG013_test: test 7 OK");
-#endif
+          crt_proc("\n\rG013_test: test 7 OK");
 				}
 				else {
 					NUM_TESTS_FAILED++;
-#ifdef DEBUG
-					printf("\n\rG013_test: test 7 FAIL");
-#else
-					//uart0_put_string("\n\rG013_test: test 7 FAIL");
-#endif
+          crt_proc("\n\rG013_test: test 7 FAIL");
 				}
 			}
   }
@@ -300,21 +246,14 @@ void proc6(void)
   while (1) {
     ret_val = release_processor();
 			if (!TESTEND) {
-#ifdef DEBUG
 			TESTEND = 1;
-			printf("\n\rG013_test: %d/7 tests OK", NUM_TESTS_PASSED);
-			printf("\n\rG013_test: %d/7 tests FAIL", NUM_TESTS_FAILED);
-			printf("\n\rG013_test: END");
-#else
-			TESTEND = 1;
-			//uart0_put_string("\n\rG013_test: ");
-			//uart0_put_char(NUM_TESTS_PASSED+48);
-			//uart0_put_string("/7 tests OK");
-			//uart0_put_string("\n\rG013_test: ");
-			//uart0_put_char(NUM_TESTS_FAILED+48);
-			//uart0_put_string("/7 tests FAIL");
-			//uart0_put_string("\n\rG013_test: END");
-#endif
+      crt_proc("\n\rG013_test: ");
+      crt_output_int(NUM_TESTS_PASSED); 
+      crt_proc("/7 tests OK");
+      crt_proc("\n\rG013_test: ");
+      crt_output_int(NUM_TESTS_FAILED); 
+      crt_proc("/7 tests FAIL");
+      crt_proc("\n\rG013_test: END");
 		}
   }
 }
