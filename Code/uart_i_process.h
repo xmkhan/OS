@@ -53,7 +53,7 @@
 
 #define uart0_init() uart_init(0)	
      
-int uart_init(int n_uart); /* initialize the n_uart, interrupt driven */
+int i_uart_init(int n_uart); /* initialize the n_uart, interrupt driven */
 
 /* write a string to the n_uart */
 void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len );

@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "process.h"
 #include "message.h"
+#include "uart_i_process.h"
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 

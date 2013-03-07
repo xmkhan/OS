@@ -1,4 +1,3 @@
-#include "uart_polling.h"
 #include "memory.h"
 #include "process.h"
 #include "pq.h"
