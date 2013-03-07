@@ -42,7 +42,9 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
 
   // Create the msg
   msg = (MSG *) MessageEnvelope;
-  msg->sender_pid = current_process->pid;
+  if (current_process->pid != TIMER_PID) {
+    msg->sender_pid = current_process->pid;
+  }
   msg->destination_pid = dest_process_ID;
   msg->next = (void *)0;
   msg->time_stamp = delay;//get_current_time();
