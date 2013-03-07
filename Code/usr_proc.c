@@ -1,7 +1,8 @@
 #include "process.h"
 #include "memory.h"
-#include "uart_polling.h"
+//#include "uart_polling.h"
 #include "usr_proc.h"
+#include "crt_display.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -105,7 +106,7 @@ void proc1(void)
 		NUM_TESTS_FAILED++;
 		TEST2 = 3;
 	}
-	
+	hot_key_handler();
   while (1) {
 		a = request_memory_block();
   }
@@ -115,7 +116,7 @@ void proc1(void)
 #ifdef DEBUG
 		printf("\n\rG013_test: test 3 FAIL");
 #else
-		uart0_put_string("\n\rG013_test: test 3 FAIL");
+		//uart0_put_string("\n\rG013_test: test 3 FAIL");
 #endif
 	}
 	while (1) {
@@ -135,7 +136,7 @@ void proc2(void)
 #ifdef DEBUG
 		printf("\n\rG013_test: test 1 OK");
 #else
-		uart0_put_string("\n\rG013_test: test 1 OK");
+		//uart0_put_string("\n\rG013_test: test 1 OK");
 #endif
 	}
 	else if (TEST1 == 3) {
@@ -143,7 +144,7 @@ void proc2(void)
 #ifdef DEBUG
 		printf("\n\rG013_test: test 1 FAIL");
 #else
-		uart0_put_string("\n\rG013_test: test 1 FAIL");
+		//uart0_put_string("\n\rG013_test: test 1 FAIL");
 #endif
 	}
 	
@@ -153,7 +154,7 @@ void proc2(void)
 #ifdef DEBUG
 		printf("\n\rG013_test: test 2 OK");
 #else
-		uart0_put_string("\n\rG013_test: test 2 OK");
+		//uart0_put_string("\n\rG013_test: test 2 OK");
 #endif
 	}
 	else if (TEST2 == 3) {
@@ -161,7 +162,7 @@ void proc2(void)
 #ifdef DEBUG
 		printf("\n\rG013_test: test 2 FAIL");
 #else
-		uart0_put_string("\n\rG013_test: test 2 FAIL");
+		//uart0_put_string("\n\rG013_test: test 2 FAIL");
 #endif
 	}
 	
@@ -172,7 +173,7 @@ void proc2(void)
 #ifdef DEBUG
 		printf("\n\rG013_test: test 3 OK");
 #else
-		uart0_put_string("\n\rG013_test: test 3 OK");
+		//uart0_put_string("\n\rG013_test: test 3 OK");
 #endif
 	}
 	i = set_process_priority(2, 4);
@@ -183,7 +184,7 @@ void proc2(void)
 #ifdef DEBUG
 			printf("\n\rG013_test: test 4 OK");
 #else
-			uart0_put_string("\n\rG013_test: test 4 OK");
+			//uart0_put_string("\n\rG013_test: test 4 OK");
 #endif
 		}
 	} else {
@@ -193,7 +194,7 @@ void proc2(void)
 #ifdef DEBUG
 			printf("\n\rG013_test: test 4 FAIL");
 #else
-			uart0_put_string("\n\rG013_test: test 4 FAIL");
+			//uart0_put_string("\n\rG013_test: test 4 FAIL");
 #endif
 		}
 	}
@@ -215,7 +216,7 @@ void proc3(void)
 #ifdef DEBUG
 			printf("\n\rG013_test: test 5 OK");
 #else
-			uart0_put_string("\n\rG013_test: test 5 OK");
+			//uart0_put_string("\n\rG013_test: test 5 OK");
 #endif
 		}
 	}
@@ -226,7 +227,7 @@ void proc3(void)
 #ifdef DEBUG
 			printf("\n\rG013_test: test 5 FAIL");
 #else
-			uart0_put_string("\n\rG013_test: test 5 FAIL");
+			//uart0_put_string("\n\rG013_test: test 5 FAIL");
 #endif
 		}
 	}
@@ -262,7 +263,7 @@ void proc5(void)
 #ifdef DEBUG
 			printf("\n\rG013_test: test 6 OK");
 #else
-			uart0_put_string("\n\rG013_test: test 6 OK");
+			//uart0_put_string("\n\rG013_test: test 6 OK");
 #endif
 		}
   while (1) {
@@ -277,7 +278,7 @@ void proc5(void)
 #ifdef DEBUG
 					printf("\n\rG013_test: test 7 OK");
 #else
-					uart0_put_string("\n\rG013_test: test 7 OK");
+					//uart0_put_string("\n\rG013_test: test 7 OK");
 #endif
 				}
 				else {
@@ -285,7 +286,7 @@ void proc5(void)
 #ifdef DEBUG
 					printf("\n\rG013_test: test 7 FAIL");
 #else
-					uart0_put_string("\n\rG013_test: test 7 FAIL");
+					//uart0_put_string("\n\rG013_test: test 7 FAIL");
 #endif
 				}
 			}
@@ -306,13 +307,13 @@ void proc6(void)
 			printf("\n\rG013_test: END");
 #else
 			TESTEND = 1;
-			uart0_put_string("\n\rG013_test: ");
-			uart0_put_char(NUM_TESTS_PASSED+48);
-			uart0_put_string("/7 tests OK");
-			uart0_put_string("\n\rG013_test: ");
-			uart0_put_char(NUM_TESTS_FAILED+48);
-			uart0_put_string("/7 tests FAIL");
-			uart0_put_string("\n\rG013_test: END");
+			//uart0_put_string("\n\rG013_test: ");
+			//uart0_put_char(NUM_TESTS_PASSED+48);
+			//uart0_put_string("/7 tests OK");
+			//uart0_put_string("\n\rG013_test: ");
+			//uart0_put_char(NUM_TESTS_FAILED+48);
+			//uart0_put_string("/7 tests FAIL");
+			//uart0_put_string("\n\rG013_test: END");
 #endif
 		}
   }

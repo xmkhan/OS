@@ -17,6 +17,7 @@ void semInit(semaphore *s);
 /**
  * Lock/unlock mechanism through semaphores (review slide notes)
  */
+// TODO: MAKE SURE TO EXCLUDE INTERRUPT (i-procs) FROM BEING ADDED TO QUEUE
 void semWait(semaphore *s);
 void semSignal(semaphore *s);
 

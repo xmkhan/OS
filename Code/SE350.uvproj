@@ -462,6 +462,21 @@
               <FilePath>.\semaphore.c</FilePath>
             </File>
             <File>
+              <FileName>crt_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\crt_display.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_i_process.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\uart_i_process.c</FilePath>
+            </File>
+            <File>
+              <FileName>keyboard.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\keyboard.c</FilePath>
+            </File>
+            <File>
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\timer.c</FilePath>
@@ -500,6 +515,21 @@
               <FileName>semaphore.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\semaphore.h</FilePath>
+            </File>
+            <File>
+              <FileName>crt_display.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\crt_display.h</FilePath>
+            </File>
+            <File>
+              <FileName>uart_i_process.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\uart_i_process.h</FilePath>
+            </File>
+            <File>
+              <FileName>keyboard.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\keyboard.h</FilePath>
             </File>
             <File>
               <FileName>timer.h</FileName>

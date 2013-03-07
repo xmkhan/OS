@@ -1,6 +1,8 @@
 #ifndef MSG_H
 #define MSG_H
 
+typedef struct PCB PCB;
+
 // Message structure that encapsulates complements of the MSG
 typedef struct MSG {
     int sender_pid;
@@ -15,6 +17,13 @@ typedef struct MSG {
  * Initializes the memory module
  */
 void message_init(void);
+
+/**
+ * Non-blocking receive used as a lookup for the queue
+ * @return If mailbox (queue) empty return (void *)0, else MSG *
+ */
+MSG *get_message_pid(int process_ID);
+MSG *get_message(PCB *pcb);
 
 /**
  * API: send_message (non-blocking)
