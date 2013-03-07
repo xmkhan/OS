@@ -3,13 +3,15 @@
 
 #include <LPC17xx.h>
 #include "uart_polling.h"
-#include "message.h"
+
 
 #ifndef __SVC_0
 #define __SVC_0  __svc_indirect(0)
 #endif
 
 #define NUM_PRIORITIES 4
+
+typedef struct MSG MSG;
 
 /** Process STATES */
 typedef enum { NEW=0, RDY, RUN, BLKD, EXIT } STATE;
