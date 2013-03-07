@@ -96,17 +96,20 @@ void process_init(void) {
  */
 int k_release_processor(void) {
  	 volatile int pid = scheduler();
-   return k_context_switch(pid);
+   PCB* process = lookup_pid(pid);
+   return k_context_switch(process);
 }
 
 /**
  * Handles context switching and managing process STATE to given pid
  * @return  [0 successful, -1 for error]
  */
-int k_context_switch(int pid) {
+int k_context_switch(PCB* process) {
    PCB *old_process = current_process;
    volatile STATE state;
-   current_process = lookup_pid(pid);
+  
+  __disable_irq();
+   current_process = process;
 
 	 if (current_process == NULL) {
 	   return -1;
@@ -115,31 +118,42 @@ int k_context_switch(int pid) {
 
    if (state == NEW) {
 	   if (old_process->state != NEW) {
-       old_process->mp_sp = (uint32_t *) __get_MSP();
+       if(old_process->type != INTERRUPT)
+          old_process->mp_sp = (uint32_t *) __get_MSP();
 
        if(old_process->state != BLKD) {
-		     old_process->state = RDY;
+		     old_process->state = current_process->type == INTERRUPT ? INTERRUPTED : RDY;
          insert_process_pq((PCB*)old_process);
        }
      }
      remove_process_pq((PCB*)current_process);
 		 current_process->state = RUN;
-		 __set_MSP((uint32_t) current_process->mp_sp);
-		 __rte();  /* pop exception stack frame from the stack for a new process */
-	 } else if (state == RDY) {
-     old_process->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
+     
+     if(current_process->type != INTERRUPT)
+     {
+        __set_MSP((uint32_t) current_process->mp_sp);
+        __enable_irq();
+        __rte();  /* pop exception stack frame from the stack for a new process */
+     }
+	 } else if (state == RDY || state == INTERRUPTED) {
+     if(old_process->type != INTERRUPT)
+        old_process->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
 
      if(old_process->state != BLKD)
      {
-   		 old_process->state = RDY;
+   		 old_process->state = current_process->type == INTERRUPT ? INTERRUPTED : RDY;
        insert_process_pq((PCB*)old_process);
      }
      remove_process_pq((PCB*)current_process);
 		 current_process->state = RUN;
-		 __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */
+     
+     if(current_process->type != INTERRUPT)
+        __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */
 	 } else {
 	     current_process = old_process; /* revert back to the old proc on error */
+       __enable_irq();
 	     return -1;
 	 }
+  __enable_irq();
 	return 0;
 }

@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "process.h"
 #include "message.h"
+#include "timer.h"
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
@@ -18,6 +19,7 @@ void __init()
    memory_init();
    process_init();
    message_init();
+   timer_init(0);
 }
 
 int main() {
@@ -31,7 +33,7 @@ int main() {
 	__enable_irq();
   
   __set_CONTROL(__get_CONTROL() | BIT(0)); 
-  
+    
   // Output test results
 #ifdef DEBUG
 	printf("\n\rG013_test: START");

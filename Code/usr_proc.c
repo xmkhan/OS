@@ -45,6 +45,7 @@ void __initialize_processes(void) {
   for (; i < NUM_PROCESSES; i++) {
     pcb_list[i]->pid = i;
     pcb_list[i]->priority = priority_t[i];
+    pcb_list[i]->type = USER;
     pcb_list[i]->state = NEW;
     process_list[i].pcb = (PCB *)pcb_list[i];
     process_list[i].start_loc = (uint32_t)process_t[i];
