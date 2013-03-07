@@ -10,7 +10,7 @@ typedef struct MSG {
     int msg_type; // 0 = empty, ...
     void *msg_data;
     struct MSG *next;
-    long time_stamp;
+    long expiry_time;
 } MSG;
 
 /**

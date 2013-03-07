@@ -11,11 +11,13 @@
 #include "memory.h"
 #include "process.h"
 #include "message.h"
+#include "pq.h"
 
 #define BIT(X) (1<<X)
 
 Process timer_process;
 PCB* timer_pcb;
+MSG* head = (void *) 0;
 
 volatile uint32_t g_timer_count = 0; // increment every 1 ms
 
@@ -173,5 +175,25 @@ void c_TIMER0_IRQHandler(void)
 
 void timeout_i_process(void)
 {
+  MSG* msg = (void *) 0;
+  
   g_timer_count++;
+  msg = get_message(timer_pcb);
+  while(msg != (void*) 0)
+  {
+    enqueue_q(head, msg, DLY_MSG_T); // enqueue the msg
+    msg = get_message(timer_pcb);
+  }
+  
+  while(head != (void *) 0 && head->expiry_time <= g_timer_count)
+  {
+    MSG* env = dequeue_q(head, MSG_T); // We have acquired a 'msg'
+    unsigned int pid = env->destination_pid;
+    send_message(pid, env);
+  }  
+}
+
+long get_current_time(void)
+{
+  return g_timer_count;
 }

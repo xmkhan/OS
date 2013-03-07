@@ -13,4 +13,7 @@ uint32_t timer_init ( uint8_t n_timer );
 // process which gets executed when timer interrupt occurs
 void timeout_i_process(void);
 
+// gets current time in milliseconds
+long get_current_time(void);
+
 #endif /* ! _TIMER_H_ */
