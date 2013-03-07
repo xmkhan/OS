@@ -1,7 +1,7 @@
 #define DEBUG
 
 #include <LPC17xx.h>
-#include "uart_polling.h"
+//#include "uart_polling.h"
 #ifdef DEBUG
 #include <stdio.h>
 #endif
@@ -26,7 +26,7 @@ int main() {
   // performe initalization
 	SystemInit();
   __disable_irq();
- 	uart0_init();
+ 	i_uart_init(0);
   __init();  
 	__enable_irq();
   
@@ -37,8 +37,8 @@ int main() {
 	printf("\n\rG013_test: START");
 	printf("\n\rG013_test: total 7 tests");
 #else
-	uart0_put_string("\n\rG013_test: START");
-	uart0_put_string("\n\rG013_test: total 7 tests");
+	//uart0_put_string("\n\rG013_test: START");
+	//uart0_put_string("\n\rG013_test: total 7 tests");
 #endif
   ret_val = release_processor();
 
