@@ -3,8 +3,6 @@
 #include "uart_polling.h"
 #include "usr_proc.h"
 
-#define DEBUG
-
 #ifdef DEBUG
 #include <stdio.h>
 #endif  /* DEBUG */

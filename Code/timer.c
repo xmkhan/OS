@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "process.h"
+#include "message.h"
 
 #define BIT(X) (1<<X)
 
@@ -100,7 +101,7 @@ uint32_t timer_init(uint8_t n_timer)
   timer_pcb = k_request_memory_block();
   timer_process.stack = k_request_memory_block();
   
-  timer_pcb->pid = 10;
+  timer_pcb->pid = TIMER_PID;
   timer_pcb->priority = 1;
   timer_pcb->type = INTERRUPT;
   timer_pcb->state = NEW;
@@ -156,12 +157,14 @@ void c_TIMER0_IRQHandler(void)
   
   saved_process = current_process;
   
-  // hasn't ran yet or been scheduled
+  // check if at start the timer started before processes started being schedule, if so no context switch
   if(!(saved_process->pid == 0 && saved_process->state == NEW))
     k_context_switch(timer_pcb);
   
+  // call i process
   timeout_i_process();
   
+  // check if at start the timer started before processes started being schedule, if so no context switch
   if(!(saved_process->pid == 0 && saved_process->state == NEW))
     k_context_switch(saved_process);
 
@@ -171,8 +174,4 @@ void c_TIMER0_IRQHandler(void)
 void timeout_i_process(void)
 {
   g_timer_count++;
-  if(g_timer_count == 7)
-  {
-    g_timer_count = 6;
-  }
 }

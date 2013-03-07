@@ -1,12 +1,16 @@
-/**
- * @brief timer.h - Timer header file
- * @author Y. Huang
- * @date 2013/02/12
- */
 #ifndef _TIMER_H_
 #define _TIMER_H_
 
-extern uint32_t timer_init ( uint8_t n_timer );  /* initialize timer n_timer */
-extern void timeout_i_process(void);
+// PID for timer
+#define TIMER_PID 10
+
+typedef struct PCB PCB;
+extern PCB* timer_pcb;
+
+// initialize the timer
+uint32_t timer_init ( uint8_t n_timer );
+
+// process which gets executed when timer interrupt occurs
+void timeout_i_process(void);
 
 #endif /* ! _TIMER_H_ */

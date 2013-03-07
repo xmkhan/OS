@@ -31,4 +31,13 @@ int send_message(int process_ID, void *MessageEnvelope);
  */
 void *receive_message(int *sender_ID);
 
+/**
+ * API: delay_send (non-blocking)
+ * Call to send a message from one process to the mailbox (queue) of another after a certain delay
+ * @param process_ID PID of the destination
+ * @param MessageEnvelope MEM_BLOCK containing the (MSG *) structure
+ * @param delay After how many milliseconds to send the message
+ */
+int delayed_send(int process_ID, void *MessageEnvelope, int delay);
+
 #endif
