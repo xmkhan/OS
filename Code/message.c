@@ -13,6 +13,23 @@ void message_init(void) {
   semInit(&receive);
 }
 
+MSG *get_message_pid(int process_ID) {
+  PCB *pcb = lookup_pid(process_ID);
+  if (pcb != (void *)0) {
+    dequeue_q(pcb->head, MSG_T);
+    return pcb->head;
+  }
+  return (void *)0;
+}
+
+MSG *get_message(PCB *pcb) {
+  if (pcb != (void *)0) {
+    dequeue_q(pcb->head, MSG_T);
+    return pcb->head;
+  }
+  return (void *)0;
+}
+
 int send_message(int process_ID, void *MessageEnvelope) {
   MSG *msg = (void *)0;
   PCB *dest_proc = (void *) 0;

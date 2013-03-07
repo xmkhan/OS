@@ -1,5 +1,6 @@
 #include "memory.h"
 #include "process.h"
+#include "message.h"
 #include "usr_proc.h"
 #include "pq.h"
 
