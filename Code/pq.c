@@ -46,9 +46,10 @@ int remove_pq(PCB* pq[], PCB* p) {
   pr_head = pq[p->priority];
   if (pr_head != p)
   {
-    while(pr_head->next != p) {
+    while(pr_head != (void *)0 && pr_head->next != p) {
         pr_head = pr_head->next;
     }
+    if (pr_head == (void *)0) return 1;
     pr_head->next = p->next;
   } else
   {
@@ -105,7 +106,7 @@ int enqueue_q(void* pq_generic, void* p_generic, q_type type) {
     PCB *p = (PCB *) p_generic;
     PCB *head = *pq;
     p->next = NULL; // Set entry to be added to NULL
-    if (pq == NULL) { // Base case, empty queue
+    if (head == NULL) { // Base case, empty queue
       *pq = p;
       return 0;
     }
@@ -118,7 +119,7 @@ int enqueue_q(void* pq_generic, void* p_generic, q_type type) {
     MSG *p = (MSG *) p_generic;
     MSG *head = *pq;
     p->next = NULL; // Set entry to be added to NULL
-    if (pq == NULL) { // Base case, empty queue
+    if (head == NULL) { // Base case, empty queue
       *pq = p;
       return 0;
     }
@@ -132,7 +133,7 @@ int enqueue_q(void* pq_generic, void* p_generic, q_type type) {
     MSG *p = (MSG *) p_generic;
     MSG *head = *pq;
     p->next = NULL; // Set entry to be added to NULL
-    if (pq == NULL) { // Base case, empty queue
+    if (head == NULL) { // Base case, empty queue
       *pq = p;
       return 0;
     }

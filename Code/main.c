@@ -35,8 +35,8 @@ int main() {
   __set_CONTROL(__get_CONTROL() | BIT(0)); 
     
   // Output test results
-  crt_proc("\n\rG013_test: START");
-  crt_proc("\n\rG013_test: total 7 tests");
+  crt_proc("G013_test: START\n\r");
+  crt_proc("G013_test: total 7 tests\n\r");
   
   ret_val = release_processor();
 
