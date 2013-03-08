@@ -5,6 +5,9 @@ void __initialize_processes(void);
 
 #define NUM_PROCESSES 7
 
+typedef struct PCB PCB;
+typedef struct Process Process;
+
 extern PCB *pcb_list[];
 extern Process process_list[];
 

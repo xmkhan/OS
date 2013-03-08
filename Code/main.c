@@ -20,6 +20,7 @@ void __init()
    process_init();
    message_init();
    timer_init(0);
+   crt_init();
 }
 
 int main() {
