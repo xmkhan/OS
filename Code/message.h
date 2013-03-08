@@ -1,6 +1,10 @@
 #ifndef MSG_H
 #define MSG_H
 
+#ifndef __SVC_0
+#define __SVC_0  __svc_indirect(0)
+#endif
+
 typedef struct PCB PCB;
 
 // Message structure that encapsulates complements of the MSG
