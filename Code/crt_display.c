@@ -1,13 +1,53 @@
-#include "crt_display.h"
 #include "uart_i_process.h"
-#include "process.h"
+#include "crt_display.h"
 #include "usr_proc.h"
+#include "message.h"
+#include "process.h"
+#include "memory.h"
+#include "pq.h"
 
 #define NUM_STATES  5
 #define COL_SIZE    10 
 #define BUFFER_SIZE 10
 
 static char buffer[BUFFER_SIZE];
+Process crt_process;
+PCB* crt_pcb;
+
+void crt_init(void) {
+  uint32_t *sp = (void *)0;
+  int j = 0;
+  
+  // initialize crt display process
+  crt_pcb = k_request_memory_block();
+  crt_process.stack = k_request_memory_block();
+  
+  crt_pcb->pid = CRT_PID;
+  crt_pcb->priority = 1;
+  crt_pcb->type = INTERRUPT;
+  crt_pcb->state = NEW;
+  crt_pcb->next = (void *) 0;
+  crt_process.pcb = crt_pcb;
+  crt_process.start_loc = (uint32_t) crt_interrupt;
+     
+  sp = (uint32_t *)((uint32_t)crt_process.stack + MEMORY_BLOCK_SIZE);
+    
+  /* 8 bytes alignement adjustment to exception stack frame */
+  if (!(((uint32_t)sp) & 0x04)) {
+      --sp;
+  }
+    
+  *(--sp)  = 0x01000000;              /* user process initial xPSR */ 
+  *(--sp)  = crt_process.start_loc ;  /* PC contains the entry point of the process */
+
+  for (j=0; j < 6; j++) {             /* R0-R3, R12 are cleared with 0 */
+    *(--sp) = 0x0;
+  }  
+  crt_process.pcb->mp_sp = (uint32_t *)sp;
+  
+  insert_process_pq(crt_process.pcb);
+
+}
 
 /**
  * System function available to processes
@@ -60,6 +100,16 @@ void int_to_char_star(int input, volatile char* b) {
 void crt_output_int(int input) {
   int_to_char_star(input, buffer);
   crt_proc(buffer);
+}
+
+void crt_interrupt(void) {
+  int sender_ID;
+  MSG *msg = (void*) 0;
+  
+  msg = (MSG*) receive_message(&sender_ID);
+  crt_proc(msg->msg_data);
+  
+  k_release_memory_block(msg);
 }
 
 /*
