@@ -57,11 +57,14 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
     dest_proc = lookup_pid_pq((PCB **)msg_pq, router_process_pid);
   }
 
-  if (dest_proc != (void *)0) {
-    enqueue_q(&(dest_proc->head), msg, MSG_T); // enqueue the msg to the destination_proc's queue
+  if (dest_proc == (void *)0) {
+    return -1;
   }
+  
+  enqueue_q(&(dest_proc->head), msg, MSG_T); // enqueue the msg to the destination_proc's queue
+  
 
-  if (dest_proc != (void *)0 && dest_proc->state == BLKD && delay == 0) {
+  if (dest_proc->state == BLKD && delay == 0) {
     // Handle unblocking of destination process.
     remove_pq((PCB **)msg_pq, dest_proc);
     dest_proc->state = RDY; // Must be ready to be added to the RDY_Q
@@ -71,7 +74,7 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   __enable_irq();
   semSignal(&send);
 
-  if (dest_proc != (void *)0 && dest_proc->priority < current_process->priority && delay == 0) {
+  if (dest_proc->priority < current_process->priority && delay == 0) {
     k_release_processor(); // Destination process has a higher priority, release processor
   }
 
