@@ -178,13 +178,22 @@ void c_UART0_IRQHandler(void)
 		g_UART0_buffer[g_UART0_count++] = input_char;
 		
 		if (input_char == 13) {
-			input_display[0] = '\n';
 			g_UART0_buffer[--g_UART0_count] = '\0';
 			g_UART0_count = 0;
-			//keyboard_proc((char *)g_UART0_buffer);
-		}
-		crt_proc(input_display);
+			keyboard_proc((char *)g_UART0_buffer);
+			input_display[0] = '\n';
+			input_display[1] = '\0';
+			crt_proc(input_display);
 			
+			g_UART0_TX_empty = 1;
+			input_display[0] = '\r';
+			input_display[1] = '\0';
+			crt_proc(input_display);
+		}
+		else {
+			crt_proc(input_display);
+		}
+		
 			if ( g_UART0_count == BUFSIZE ) {
 				//g_UART0_buffer[g_UART0_count] = '\0';
 				//keyboard_proc((char *)g_UART0_buffer);

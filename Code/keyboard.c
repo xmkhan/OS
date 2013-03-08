@@ -1,5 +1,6 @@
 #include "keyboard.h"
 #include "memory.h"
+#include "timer.h"
 #include "message.h"
 #include "crt_display.h"
 
@@ -7,12 +8,6 @@ int KEYBOARD_PID = 12;
 int WALL_CLOCK_START_TIMER = 0;
 int WALL_CLOCK_CURRENT_TIMER = 0;
 int WALL_CLOCK_RUNNING = 0;
-
-// temporary, will be replaced later by real code
-int get_timer_count()
-{
-	return 0;
-}
 
 int hms_to_ts(char *hms)
 {
@@ -36,9 +31,6 @@ void keyboard_proc(char *input)
   if (!b) {
 		return;
 	}
-
-	// display keyboard input as well
-	//crt_proc((void *)b);
 	
 	// respond to commands that start with % only
 	if (*b != '%') {
@@ -60,14 +52,14 @@ void keyboard_proc(char *input)
 	if (command[0] == 'W') {
 		if (command[1] == 'R') {
 			// wall clock reset
-			WALL_CLOCK_START_TIMER = get_timer_count();
-			WALL_CLOCK_CURRENT_TIMER = get_timer_count();
+			WALL_CLOCK_START_TIMER = get_current_time();
+			WALL_CLOCK_CURRENT_TIMER = WALL_CLOCK_START_TIMER;
 			WALL_CLOCK_RUNNING = 1;
 		}
 		else if (command[1] == 'S') {
 			// wall clock set
-			WALL_CLOCK_START_TIMER = get_timer_count();
-			//WALL_CLOCK_CURRENT_TIMER = get_timer_count() + hms_to_ts(b);
+			WALL_CLOCK_START_TIMER = get_current_time();
+			//WALL_CLOCK_CURRENT_TIMER = WALL_CLOCK_START_TIMER + hms_to_ts(b);
 			WALL_CLOCK_RUNNING = 1;
 		}
 		else if (command[1] == 'T') {
