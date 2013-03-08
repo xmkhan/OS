@@ -37,7 +37,7 @@ extern void* _request_memory_block(unsigned int p_func) __SVC_0;
  * API: release_memory_block
  * Call to release allocated block of memory for other processes to use
  */
-extern int k_release_memory_block(void *);
+int k_release_memory_block(void *);
 #define release_memory_block(p_mem_blk) _release_memory_block((unsigned int)k_release_memory_block, p_mem_blk)
 extern int _release_memory_block(unsigned int p_func, void * p_mem_blk) __SVC_0;
 

@@ -1,6 +1,9 @@
 #ifndef USR_PROC
 #define USR_PROC
 
+typedef struct PCB PCB;
+typedef struct Process Process;
+
 void __initialize_processes(void);
 
 #define NUM_PROCESSES 7

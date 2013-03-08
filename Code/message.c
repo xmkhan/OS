@@ -81,12 +81,12 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   return 0;
 }
 
-int send_message(int process_ID, void *MessageEnvelope)
+int k_send_message(int process_ID, void *MessageEnvelope)
 {
   return send_message_global(process_ID, MessageEnvelope, process_ID, 0);
 }
 
-int delayed_send(int process_ID, void *MessageEnvelope, int delay)
+int k_delayed_send(int process_ID, void *MessageEnvelope, int delay)
 {
   if(delay <= 0)
     return -1;
@@ -95,7 +95,7 @@ int delayed_send(int process_ID, void *MessageEnvelope, int delay)
 }
 
 
-void *receive_message(int *sender_ID) {
+void *k_receive_message(int *sender_ID) {
   MSG *msg = (void *) 0;
   PCB *dest_proc = (void *)0;
 

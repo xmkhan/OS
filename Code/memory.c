@@ -35,6 +35,7 @@ void memory_init()
     mem_node->block_num = a;
     mem_node->used = 0;
     mem_node->address = (unsigned int)mem_node + sizeof(MemNode);
+    
     mem_node->next = (MemNode*) (mem_node->address + MEMORY_BLOCK_SIZE);
     
     mem_node = mem_node->next;
@@ -57,7 +58,7 @@ void* k_request_memory_block(void) {
   }
   
   // Search for free block
-  while(mem_node != 0)
+  while(mem_node != (void *)0)
   {
     // set block as used
     if(mem_node->used == 0)
@@ -84,7 +85,7 @@ int k_release_memory_block(void* p_mem_blk) {
   PCB* blkProcess = NULL;
   while(cur_mem != 0)
   {
-    if(cur_mem->address == (unsigned int) p_mem_blk)
+    if(cur_mem->address == (unsigned int) ((void *) p_mem_blk))
     {
       cur_mem->used = 0;
       
