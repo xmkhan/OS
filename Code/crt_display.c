@@ -66,7 +66,7 @@ void crt_output_int(int input) {
  * handle hot-key key press 
  */
 void hot_key_handler(void) {
-  char* header = "\nProc_id  Priority Status\n\0";
+  char* header = "\n\rProc_id  Priority Status\n\r\0";
   int i = 0, j=0, n = 0, col_empty = 0;
   PCB *iterate;  
   
@@ -109,7 +109,8 @@ void hot_key_handler(void) {
     
     //Print a new line at the end
     buffer[0] = '\n';
-    buffer[1] = '\0';
+    buffer[1] = '\r';
+    buffer[2] = '\0';
     crt_proc((void*) buffer);
   }
 }
