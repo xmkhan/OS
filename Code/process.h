@@ -14,7 +14,8 @@
 typedef struct MSG MSG;
 
 /** Process STATES */
-typedef enum { NEW=0, RDY, RUN, BLKD, EXIT } STATE;
+typedef enum { NEW=0, RDY, RUN, BLKD, INTERRUPTED, EXIT } STATE;
+typedef enum { USER=0, INTERRUPT } TYPE;
 
 /**
  * PCB struct containing relevent information for process management
@@ -22,6 +23,7 @@ typedef enum { NEW=0, RDY, RUN, BLKD, EXIT } STATE;
 typedef struct PCB {
   unsigned int pid;
   uint8_t priority;
+  TYPE type;
   STATE state;
   uint32_t *mp_sp; /* stack pointer of the process */
 	struct PCB *next;
@@ -51,7 +53,7 @@ PCB *lookup_pid(int pid);
  * API: release_processor
  * Call for context switching, switches to next RDY process in line
  */
-extern int k_context_switch(int pid);
+extern int k_context_switch(PCB* process);
 extern int k_release_processor(void);
 #define release_processor() _release_processor((unsigned int)k_release_processor)
 extern int _release_processor(unsigned int p_func) __SVC_0;

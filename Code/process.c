@@ -3,9 +3,7 @@
 #include "message.h"
 #include "usr_proc.h"
 #include "pq.h"
-
-
-#define DEBUG
+#include "timer.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -35,7 +33,7 @@ int scheduler(void) {
   for(; i < NUM_PRIORITIES; ++i)
   {
      pr_head = p_pq[i];
-     while (pr_head != NULL && (pr_head->state != RDY && pr_head->state != NEW))
+     while (pr_head != NULL && ((pr_head->state != RDY && pr_head->state != NEW) || pr_head->type == INTERRUPT))
      {
        pr_head = pr_head->next;
      }
@@ -52,6 +50,11 @@ PCB *lookup_pid(int pid) {
   for (i =0; i < NUM_PROCESSES; ++i) {
     if (pcb_list[i]->pid == pid) return pcb_list[i];
   }
+  
+  // check if it is timer process
+  if(pid == TIMER_PID)
+    return timer_pcb;
+  
 	return (void *)0;
 }
 
@@ -97,17 +100,19 @@ void process_init(void) {
  */
 int k_release_processor(void) {
  	 volatile int pid = scheduler();
-   return k_context_switch(pid);
+   PCB* process = lookup_pid(pid);
+   return k_context_switch(process);
 }
 
 /**
- * Handles context switching and managing process STATE to given pid
+ * Handles context switching and managing process STATE to given pcb
  * @return  [0 successful, -1 for error]
  */
-int k_context_switch(int pid) {
+int k_context_switch(PCB* process) {
    PCB *old_process = current_process;
    volatile STATE state;
-   current_process = lookup_pid(pid);
+  
+   current_process = process;
 
 	 if (current_process == NULL) {
 	   return -1;
@@ -116,28 +121,36 @@ int k_context_switch(int pid) {
 
    if (state == NEW) {
 	   if (old_process->state != NEW) {
-       old_process->mp_sp = (uint32_t *) __get_MSP();
+       if(old_process->type != INTERRUPT)
+          old_process->mp_sp = (uint32_t *) __get_MSP();
 
        if(old_process->state != BLKD) {
-		     old_process->state = RDY;
+		     old_process->state = current_process->type == INTERRUPT ? INTERRUPTED : RDY;
          insert_process_pq((PCB*)old_process);
        }
      }
      remove_process_pq((PCB*)current_process);
 		 current_process->state = RUN;
-		 __set_MSP((uint32_t) current_process->mp_sp);
-		 __rte();  /* pop exception stack frame from the stack for a new process */
-	 } else if (state == RDY) {
-     old_process->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
+     
+     if(current_process->type != INTERRUPT)
+     {
+        __set_MSP((uint32_t) current_process->mp_sp);
+        __rte();  /* pop exception stack frame from the stack for a new process */
+     }
+	 } else if (state == RDY || state == INTERRUPTED) {
+     if(old_process->type != INTERRUPT)
+        old_process->mp_sp = (uint32_t *) __get_MSP(); /* save the old process's sp */
 
      if(old_process->state != BLKD)
      {
-   		 old_process->state = RDY;
+   		 old_process->state = current_process->type == INTERRUPT ? INTERRUPTED : RDY;
        insert_process_pq((PCB*)old_process);
      }
      remove_process_pq((PCB*)current_process);
 		 current_process->state = RUN;
-		 __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */
+     
+     if(current_process->type != INTERRUPT)
+        __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */
 	 } else {
 	     current_process = old_process; /* revert back to the old proc on error */
 	     return -1;
