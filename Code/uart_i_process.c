@@ -199,13 +199,13 @@ void c_UART0_IRQHandler(void)
 			uint8_t input_char = pUart->RBR;
 			if (input_char == '\n') {
 				g_UART0_buffer[g_UART0_count] = '\0';
-				keyboard_proc(g_UART0_buffer);
+				keyboard_proc((char *)g_UART0_buffer);
 				g_UART0_count = 0;
 			}
 			g_UART0_buffer[g_UART0_count++] = input_char; 
 			if ( g_UART0_count == BUFSIZE-1 ) {
 				g_UART0_buffer[g_UART0_count] = '\0';
-				keyboard_proc(g_UART0_buffer);
+				keyboard_proc((char *)g_UART0_buffer);
 				g_UART0_count = 0;  /* buffer overflow */
 			}	
 		}	    

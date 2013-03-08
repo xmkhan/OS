@@ -3,10 +3,10 @@
 #include "message.h"
 #include "crt_display.h"
 
-KEYBOARD_PID = 11;
-WALL_CLOCK_START_TIMER = 0;
-WALL_CLOCK_CURRENT_TIMER = 0;
-WALL_CLOCK_RUNNING = 0;
+int KEYBOARD_PID = 11;
+int WALL_CLOCK_START_TIMER = 0;
+int WALL_CLOCK_CURRENT_TIMER = 0;
+int WALL_CLOCK_RUNNING = 0;
 
 // temporary, will be replaced later by real code
 int get_timer_count()
@@ -25,21 +25,20 @@ int hms_to_ts(char *hms)
 void keyboard_proc(char *input)
 {
 	volatile MSG *m = (MSG *)request_memory_block();
-	m->destination_pid = 12;
-	m->msg_type = 1;
-	m->msg_data = input;
-	
 	volatile char command[2];
 	volatile int i = 0;
 	
 	volatile char *b = input;
+	m->destination_pid = 12;
+	m->msg_type = 1;
+	m->msg_data = input;
 	
   if (!b) {
 		return;
 	}
 
 	// display keyboard input as well
-	crt_proc(m);
+	crt_proc((void *)b);
 	
 	// respond to commands that start with % only
 	if (*b != '%') {
@@ -75,4 +74,5 @@ void keyboard_proc(char *input)
 			// wall clock terminate
 			WALL_CLOCK_RUNNING = 0;
 		}
+	}
 }
