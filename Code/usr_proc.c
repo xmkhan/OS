@@ -107,6 +107,7 @@ void proc1(void)
 	}
 	hot_key_handler();
   while (1) {
+		break;
 		a = request_memory_block();
   }
 	if (!TEST3) {

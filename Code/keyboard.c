@@ -24,21 +24,21 @@ int hms_to_ts(char *hms)
 
 void keyboard_proc(char *input)
 {
-	volatile MSG *m = (MSG *)request_memory_block();
+	//volatile MSG *m = (MSG *)k_request_memory_block();
 	volatile char command[2];
 	volatile int i = 0;
 	
 	volatile char *b = input;
-	m->destination_pid = 12;
-	m->msg_type = 1;
-	m->msg_data = input;
+	//m->destination_pid = 12;
+	//m->msg_type = 1;
+	//m->msg_data = input;
 	
   if (!b) {
 		return;
 	}
 
 	// display keyboard input as well
-	crt_proc((void *)b);
+	//crt_proc((void *)b);
 	
 	// respond to commands that start with % only
 	if (*b != '%') {
