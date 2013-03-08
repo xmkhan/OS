@@ -8,6 +8,7 @@
 #include <LPC17xx.h>
 #include "uart_i_process.h"
 #include "keyboard.h"
+#include "crt_display.h"
 
 volatile uint8_t g_UART0_TX_empty=1;
 volatile uint8_t g_UART0_buffer[BUFSIZE];
@@ -160,17 +161,37 @@ void c_UART0_IRQHandler(void)
 	uint8_t IIR_IntId;      /* Interrupt ID from IIR */		
 	uint8_t LSR_Val;        /* LSR Value             */
 	uint8_t dummy = dummy;	/* to clear interrupt upon LSR error */
+	char input_display[3];
+	uint8_t input_char;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
-
+	
 	/* Reading IIR automatically acknowledges the interrupt */
 	IIR_IntId = (pUart->IIR) >> 1 ; /* skip pending bit in IIR */
 
 	if (IIR_IntId & IIR_RDA) { /* Receive Data Avaialbe */
 		/* read UART. Read RBR will clear the interrupt */
-		g_UART0_buffer[g_UART0_count++] = pUart->RBR;
-		if (g_UART0_count == BUFSIZE) {
-			g_UART0_count = 0; /* buffer overflow */
-		}	
+		input_char = pUart->RBR;
+		input_display[0] = input_char;
+		
+		if (input_char == 13) {
+			input_display[0] = '\n';
+			input_display[1] = '\r';
+			input_display[2] = '\0';
+			//keyboard_proc((char *)g_UART0_buffer);
+			g_UART0_count = 0;
+		}
+		else {
+			input_display[1] = '\0';
+			g_UART0_buffer[g_UART0_count++] = input_char;
+		}
+			
+			if ( g_UART0_count == BUFSIZE-1 ) {
+				g_UART0_buffer[g_UART0_count] = '\0';
+				//keyboard_proc((char *)g_UART0_buffer);
+				g_UART0_count = 0;  /* buffer overflow */
+			}
+			crt_proc(input_display);
+			
 	} else if (IIR_IntId & IIR_THRE) { 
 		/* THRE Interrupt, transmit holding register empty*/
 		
@@ -196,16 +217,9 @@ void c_UART0_IRQHandler(void)
 		*/
 		if (LSR_Val & LSR_RDR) { /* Receive Data Ready */
 			/* read from the uart */
-			uint8_t input_char = pUart->RBR;
-			if (input_char == '\n') {
-				g_UART0_buffer[g_UART0_count] = '\0';
-				keyboard_proc((char *)g_UART0_buffer);
-				g_UART0_count = 0;
-			}
-			g_UART0_buffer[g_UART0_count++] = input_char; 
-			if ( g_UART0_count == BUFSIZE-1 ) {
-				g_UART0_buffer[g_UART0_count] = '\0';
-				keyboard_proc((char *)g_UART0_buffer);
+			g_UART0_buffer[g_UART0_count++] = pUart->RBR;
+			
+			if ( g_UART0_count == BUFSIZE ) {
 				g_UART0_count = 0;  /* buffer overflow */
 			}	
 		}	    
