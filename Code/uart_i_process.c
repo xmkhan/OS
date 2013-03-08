@@ -165,6 +165,8 @@ void c_UART0_IRQHandler(void)
 	uint8_t input_char;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	
+	__disable_irq();
+	
 	/* Reading IIR automatically acknowledges the interrupt */
 	IIR_IntId = (pUart->IIR) >> 1 ; /* skip pending bit in IIR */
 
@@ -207,6 +209,7 @@ void c_UART0_IRQHandler(void)
 			   Dummy read on RX to clear interrupt, then bail out
 			*/
 			dummy = pUart->RBR; 
+			__enable_irq();
 			return; /* error occurs, return */
 		}
 		/* If no error on RLS, normal ready, save into the data buffer.
@@ -221,8 +224,10 @@ void c_UART0_IRQHandler(void)
 			}	
 		}	    
 	} else { /* IIR_CTI and reserved combination are not implemented */
+		__enable_irq();
 		return;
-	}	
+	}
+	__enable_irq();
 }
 
 void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )

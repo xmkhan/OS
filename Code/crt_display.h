@@ -7,7 +7,7 @@ typedef struct Message {
 
 void int_to_char_star(int input, volatile char* buffer);
 
-void crt_proc(void* m);
+void crt_proc(char* m);
 
 void crt_output_int(int input);
 

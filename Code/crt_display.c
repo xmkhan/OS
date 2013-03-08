@@ -14,10 +14,10 @@ static char buffer[BUFFER_SIZE];
  * for non-blocking output to console
  * @param m - the message to be printed
  */
-void crt_proc(void* m)
+void crt_proc(char* m)
 {
   volatile int length = 0;
-  char* b = (char*)m;
+  char* b = m;
   
   if(!b) return;
   
@@ -30,7 +30,7 @@ void crt_proc(void* m)
   if(length == 0) return;
   
   //non-blocking output
-  uart_i_process( 0, (uint8_t* ) m, length );  
+  uart_i_process( 0, (uint8_t* ) m, length );
 }
 
 /**
@@ -38,23 +38,23 @@ void crt_proc(void* m)
  * @param buffer - stores char* representation
  *        input  - int to be converted
  */
-void int_to_char_star(int input, volatile char* buffer) {
+void int_to_char_star(int input, volatile char* b) {
   
   //case for 0;
   if(input == 0) {
-    *buffer = '0';
-    buffer++;
+    *b = '0';
+    b++;
   }
   
   //case for positive number
   while(input > 0) {
-    *buffer = (char)(((int)'0')+input%10);
+    *b = (char)(((int)'0')+input%10);
     input /= 10;
-    buffer++;
+    b++;
   }
   
   //add null terminating character
-  *buffer   = '\0';
+  *b   = '\0';
 }
 
 void crt_output_int(int input) {
@@ -66,7 +66,7 @@ void crt_output_int(int input) {
  * handle hot-key key press 
  */
 void hot_key_handler(void) {
-  char* header = "\n\rProc_id  Priority Status\n\r\0";
+  char* header = "\n\rProc_id  Priority Status\n\r";
   int i = 0, j=0, n = 0, col_empty = 0;
   PCB *iterate;  
   
