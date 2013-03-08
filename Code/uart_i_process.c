@@ -161,7 +161,7 @@ void c_UART0_IRQHandler(void)
 	uint8_t IIR_IntId;      /* Interrupt ID from IIR */		
 	uint8_t LSR_Val;        /* LSR Value             */
 	uint8_t dummy = dummy;	/* to clear interrupt upon LSR error */
-	char input_display[3];
+	char input_display[2];
 	uint8_t input_char;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	
@@ -172,25 +172,22 @@ void c_UART0_IRQHandler(void)
 		/* read UART. Read RBR will clear the interrupt */
 		input_char = pUart->RBR;
 		input_display[0] = input_char;
+		input_display[1] = '\0';
+		g_UART0_buffer[g_UART0_count++] = input_char;
 		
 		if (input_char == 13) {
 			input_display[0] = '\n';
-			input_display[1] = '\r';
-			input_display[2] = '\0';
-			//keyboard_proc((char *)g_UART0_buffer);
+			g_UART0_buffer[--g_UART0_count] = '\0';
 			g_UART0_count = 0;
+			//keyboard_proc((char *)g_UART0_buffer);
 		}
-		else {
-			input_display[1] = '\0';
-			g_UART0_buffer[g_UART0_count++] = input_char;
-		}
+		crt_proc(input_display);
 			
-			if ( g_UART0_count == BUFSIZE-1 ) {
-				g_UART0_buffer[g_UART0_count] = '\0';
+			if ( g_UART0_count == BUFSIZE ) {
+				//g_UART0_buffer[g_UART0_count] = '\0';
 				//keyboard_proc((char *)g_UART0_buffer);
 				g_UART0_count = 0;  /* buffer overflow */
 			}
-			crt_proc(input_display);
 			
 	} else if (IIR_IntId & IIR_THRE) { 
 		/* THRE Interrupt, transmit holding register empty*/

@@ -3,7 +3,7 @@
 #include "message.h"
 #include "crt_display.h"
 
-int KEYBOARD_PID = 11;
+int KEYBOARD_PID = 12;
 int WALL_CLOCK_START_TIMER = 0;
 int WALL_CLOCK_CURRENT_TIMER = 0;
 int WALL_CLOCK_RUNNING = 0;
