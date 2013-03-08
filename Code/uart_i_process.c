@@ -7,6 +7,7 @@
 
 #include <LPC17xx.h>
 #include "uart_i_process.h"
+#include "keyboard.h"
 
 volatile uint8_t g_UART0_TX_empty=1;
 volatile uint8_t g_UART0_buffer[BUFSIZE];
@@ -195,8 +196,16 @@ void c_UART0_IRQHandler(void)
 		*/
 		if (LSR_Val & LSR_RDR) { /* Receive Data Ready */
 			/* read from the uart */
-			g_UART0_buffer[g_UART0_count++] = pUart->RBR; 
-			if ( g_UART0_count == BUFSIZE ) {
+			uint8_t input_char = pUart->RBR;
+			if (input_char == '\n') {
+				g_UART0_buffer[g_UART0_count] = '\0';
+				keyboard_proc(g_UART0_buffer);
+				g_UART0_count = 0;
+			}
+			g_UART0_buffer[g_UART0_count++] = input_char; 
+			if ( g_UART0_count == BUFSIZE-1 ) {
+				g_UART0_buffer[g_UART0_count] = '\0';
+				keyboard_proc(g_UART0_buffer);
 				g_UART0_count = 0;  /* buffer overflow */
 			}	
 		}	    
