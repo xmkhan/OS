@@ -16,16 +16,16 @@ void message_init(void) {
 
 MSG *get_message_pid(int process_ID) {
   PCB *pcb = lookup_pid(process_ID);
-  if (pcb != (void *)0) {
-    dequeue_q(pcb->head, MSG_T);
+  if (pcb != (void *)0 && pcb->head != (void *)0) {
+    dequeue_q(&(pcb->head), MSG_T);
     return pcb->head;
   }
   return (void *)0;
 }
 
 MSG *get_message(PCB *pcb) {
-  if (pcb != (void *)0) {
-    dequeue_q(pcb->head, MSG_T);
+  if (pcb != (void *)0 && pcb->head != (void *)0) {
+    dequeue_q(&(pcb->head), MSG_T);
     return pcb->head;
   }
   return (void *)0;
@@ -58,7 +58,7 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   }
 
   if (dest_proc != (void *)0) {
-    enqueue_q(dest_proc->head, msg, MSG_T); // enqueue the msg to the destination_proc's queue
+    enqueue_q(&(dest_proc->head), msg, MSG_T); // enqueue the msg to the destination_proc's queue
   }
 
   if (dest_proc != (void *)0 && dest_proc->state == BLKD && delay == 0) {
@@ -105,11 +105,11 @@ void *receive_message(int *sender_ID) {
     if (dest_proc == (void *)0) { // PCB has not been added to the blocking msg_pq
       remove_process_pq(current_process);
       current_process->state = BLKD; // Set state to BLKD
-      enqueue_q(msg_pq, current_process, PCB_T);
+      enqueue_q(&msg_pq, current_process, PCB_T);
     }
     k_release_processor(); // Release this process as it is blocked
   }
-  msg = dequeue_q(current_process->head, MSG_T); // We have acquired a 'msg'
+  msg = dequeue_q(&(current_process->head), MSG_T); // We have acquired a 'msg'
   *sender_ID = msg->sender_pid; // Fill in the sender_ID
 
   __enable_irq();
