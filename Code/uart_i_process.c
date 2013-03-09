@@ -7,6 +7,8 @@
 
 #include <LPC17xx.h>
 #include "uart_i_process.h"
+#include "memory.h"
+#include "message.h"
 #include "keyboard.h"
 #include "crt_display.h"
 
@@ -161,8 +163,10 @@ void c_UART0_IRQHandler(void)
 	uint8_t IIR_IntId;      /* Interrupt ID from IIR */		
 	uint8_t LSR_Val;        /* LSR Value             */
 	uint8_t dummy = dummy;	/* to clear interrupt upon LSR error */
-	char input_display[2];
+	char input_display[3];
 	uint8_t input_char;
+	MSG *key_msg = (void *)0;
+	int msg_send_status;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	
 	__disable_irq();
@@ -172,6 +176,8 @@ void c_UART0_IRQHandler(void)
 
 	if (IIR_IntId & IIR_RDA) { /* Receive Data Avaialbe */
 		/* read UART. Read RBR will clear the interrupt */
+		key_msg = (MSG *)k_request_memory_block();
+		key_msg->msg_type = 1;
 		input_char = pUart->RBR;
 		input_display[0] = input_char;
 		input_display[1] = '\0';
@@ -182,16 +188,22 @@ void c_UART0_IRQHandler(void)
 			g_UART0_count = 0;
 			keyboard_proc((char *)g_UART0_buffer);
 			input_display[0] = '\n';
-			input_display[1] = '\0';
-			crt_proc(input_display);
+			input_display[1] = '\r';
+			input_display[2] = '\0';
+			key_msg->msg_data = input_display;
+			msg_send_status = send_message(CRT_PID, key_msg);
+			crt_interrupt();
 			
-			g_UART0_TX_empty = 1;
-			input_display[0] = '\r';
-			input_display[1] = '\0';
-			crt_proc(input_display);
+			//g_UART0_TX_empty = 1;
+			//input_display[0] = '\r';
+			//input_display[1] = '\0';
+			//key_msg->msg_data = input_display;
+			//msg_send_status = send_message(CRT_PID, key_msg);
 		}
 		else {
-			crt_proc(input_display);
+			key_msg->msg_data = input_display;
+			msg_send_status = send_message(CRT_PID, key_msg);
+			crt_interrupt();
 		}
 		
 			if ( g_UART0_count == BUFSIZE ) {
