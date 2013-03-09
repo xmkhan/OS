@@ -118,7 +118,8 @@ int enqueue_q(void* pq_generic, void* p_generic, q_type type) {
     MSG **pq = (MSG **) pq_generic;
     MSG *p = (MSG *) p_generic;
     MSG *head = *pq;
-    p->next = NULL; // Set entry to be added to NULL
+      ((MSG *)p_generic)->next = (void *)0;
+    p->next = (void *)0; // Set entry to be added to NULL
     if (head == NULL) { // Base case, empty queue
       *pq = p;
       return 0;

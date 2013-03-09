@@ -58,7 +58,7 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   }
 
   if (dest_proc == (void *)0) {
-    return -1;
+    return 1;
   }
   
   enqueue_q(&(dest_proc->head), msg, MSG_T); // enqueue the msg to the destination_proc's queue
@@ -89,7 +89,7 @@ int k_send_message(int process_ID, void *MessageEnvelope)
 int k_delayed_send(int process_ID, void *MessageEnvelope, int delay)
 {
   if(delay <= 0)
-    return -1;
+    return 1;
   
   return send_message_global(process_ID, MessageEnvelope, TIMER_PID, delay);
 }
@@ -110,7 +110,9 @@ void *k_receive_message(int *sender_ID) {
       current_process->state = BLKD; // Set state to BLKD
       enqueue_q(&msg_pq, current_process, PCB_T);
     }
+    __enable_irq();
     k_release_processor(); // Release this process as it is blocked
+    __disable_irq();
   }
   msg = dequeue_q(&(current_process->head), MSG_T); // We have acquired a 'msg'
   *sender_ID = msg->sender_pid; // Fill in the sender_ID

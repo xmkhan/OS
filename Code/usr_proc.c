@@ -85,8 +85,10 @@ void proc1(void)
   while(1)
   {
     volatile int status = 0;
-    volatile int ret_val = 10, ff;
+    volatile int ret_val = 10;
     MSG *msg = (void *)0;
+    MSG *msg2 = (void *)0;
+    MSG *msg3 = (void *)0;
   
     int x1 = 100, x2 = 200, x3 = 300;
     // Send message for proc2
@@ -95,15 +97,23 @@ void proc1(void)
     msg->msg_type = 1;
     status = send_message(2, msg);
     
+    msg2 = (MSG *) request_memory_block();
+    msg2->msg_data = &x2;
+    msg2->msg_type = 1;
+    status = send_message(3, msg2);
+    
+    msg3 = (MSG *) request_memory_block();
+    msg3->msg_data = &x2;
+    msg3->msg_type = 1;
+    status = send_message(3, msg3);
 
     if (status == 0) {
       NUM_TESTS_PASSED++;
-      //crt_proc("G013_test: test 1 OK\n\r");
+      crt_proc("G013_test: test 1 OK\n\r");
     } else {
       NUM_TESTS_FAILED++;
      // crt_proc("G013_test: test 1 FAIL\n\r");
     }
-    ff = release_memory_block((void *)msg);
 
     ret_val = release_processor();
   }
@@ -119,10 +129,10 @@ void proc2(void)
     MSG *msg = (MSG *)receive_message(&sender_pid);
     if (sender_pid == 1 && msg != (void *)0 && (*((int *)msg->msg_data) == 100)) {
         NUM_TESTS_PASSED++;
-      crt_proc("G013_test: test 2 OK\n\r");
+    //  crt_proc("G013_test: test 2 OK\n\r");
     } else {
         NUM_TESTS_FAILED++;
-      crt_proc("G013_test: test 2 FAIL\n\r");
+      //crt_proc("G013_test: test 2 FAIL\n\r");
     }
   
     release_memory_block(msg);
@@ -133,6 +143,7 @@ void proc2(void)
 // process 3: Testing for multiple send/multiple receive
 void proc3(void)
 {
+  while(1) {
   volatile int ret_val = 10;
   int pass = 0;
   
@@ -143,36 +154,34 @@ void proc3(void)
   }
   release_memory_block((void *)msg);
   
-  msg = receive_message(&sender_pid);
-  if (sender_pid == 1 && msg != (void *)0 && (*((int *)msg->msg_data) == 300)) {
-    pass++;
-  }
-  release_memory_block((void *)msg);
-  
-  
-  if (pass == 2) {
+    
+  if (pass == 1) {
     NUM_TESTS_PASSED++;
-  crt_proc("G013_test: test 3 OK\n\r");
+  //crt_proc("G013_test: test 3 OK\n\r");
 } else {
     NUM_TESTS_FAILED++;
-  crt_proc("G013_test: test 3 FAIL\n\r");
+  // crt_proc("G013_test: test 3 FAIL\n\r");
 }
   ret_val = release_processor();
-
+ }
 }
 
 // process 4: set process priority, then block by requesting memory (already gone from proc1)
 void proc4(void)
 {
+  while (1) {
   volatile int ret_val = 10;
   ret_val = release_processor();
+  }
 }
 
 // process 5: test registers/general variable allocation and results of proc4
 void proc5(void)
 {
+  while (1) {
   volatile int ret_val = 10;
   ret_val = release_processor();
+  }
 }
 
 // process 6: end of tests, print results
