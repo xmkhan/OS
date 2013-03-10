@@ -1,8 +1,5 @@
 #include <LPC17xx.h>
 #include "uart_i_process.h"
-#ifdef DEBUG
-#include <stdio.h>
-#endif
 
 #include "memory.h"
 #include "process.h"
