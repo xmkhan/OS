@@ -1,18 +1,13 @@
 #include "keyboard.h"
 #include "memory.h"
+#include "timer.h"
 #include "message.h"
 #include "crt_display.h"
 
-int KEYBOARD_PID = 11;
+int KEYBOARD_PID = 12;
 int WALL_CLOCK_START_TIMER = 0;
 int WALL_CLOCK_CURRENT_TIMER = 0;
 int WALL_CLOCK_RUNNING = 0;
-
-// temporary, will be replaced later by real code
-int get_timer_count()
-{
-	return 0;
-}
 
 int hms_to_ts(char *hms)
 {
@@ -22,23 +17,38 @@ int hms_to_ts(char *hms)
 	return (hours*3600) + (mins*60) + (secs);
 }
 
+void ts_to_hms(int ts, char *buffer)
+{
+	int hours;
+	int mins;
+	int secs;
+	ts %= 86400;
+	hours = ts % 3600;
+	ts /= 3600;
+	mins = ts % 60;
+	ts /= 60;
+	secs = ts;
+	
+	buffer[0] = hours / 10;
+	buffer[1] = hours % 10;
+	buffer[2] = ':';
+	buffer[3] = mins / 10;
+	buffer[4] = mins % 10;
+	buffer[5] = ':';
+	buffer[6] = secs / 10;
+	buffer[7] = secs % 10;
+}
+
 void keyboard_proc(char *input)
 {
-	//volatile MSG *m = (MSG *)k_request_memory_block();
 	volatile char command[2];
 	volatile int i = 0;
 	
 	volatile char *b = input;
-	//m->destination_pid = 12;
-	//m->msg_type = 1;
-	//m->msg_data = input;
 	
   if (!b) {
 		return;
 	}
-
-	// display keyboard input as well
-	//crt_proc((void *)b);
 	
 	// respond to commands that start with % only
 	if (*b != '%') {
@@ -60,14 +70,14 @@ void keyboard_proc(char *input)
 	if (command[0] == 'W') {
 		if (command[1] == 'R') {
 			// wall clock reset
-			WALL_CLOCK_START_TIMER = get_timer_count();
-			WALL_CLOCK_CURRENT_TIMER = get_timer_count();
+			WALL_CLOCK_START_TIMER = get_current_time();
+			WALL_CLOCK_CURRENT_TIMER = WALL_CLOCK_START_TIMER;
 			WALL_CLOCK_RUNNING = 1;
 		}
 		else if (command[1] == 'S') {
 			// wall clock set
-			WALL_CLOCK_START_TIMER = get_timer_count();
-			//WALL_CLOCK_CURRENT_TIMER = get_timer_count() + hms_to_ts(b);
+			WALL_CLOCK_START_TIMER = get_current_time();
+			WALL_CLOCK_CURRENT_TIMER = WALL_CLOCK_START_TIMER;
 			WALL_CLOCK_RUNNING = 1;
 		}
 		else if (command[1] == 'T') {
