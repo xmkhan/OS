@@ -4,10 +4,6 @@
 #include "usr_proc.h"
 #include "crt_display.h"
 
-#ifdef DEBUG
-#include <stdio.h>
-#endif  /* DEBUG */
-
 #define INITIAL_xPSR 0x01000000
 
 // test state variables
@@ -34,7 +30,7 @@ void __initialize_processes(void) {
   volatile unsigned int i = 0, j = 0, k = 0;  
   
   process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
-  int priority_t[] = {4, 0, 1, 1, 1, 1, 1};
+  int priority_t[] = {4, 0, 0, 1, 1, 1, 1};
 
   for(k = 0; k < NUM_PROCESSES; k++) {
     pcb_list[k] = k_request_memory_block();
@@ -74,8 +70,6 @@ void null_process(void) {
   
   while(1) {
     volatile int ret_val = release_processor();
-    crt_proc("\n\rnull_proc: ret_val=");
-    crt_output_int(ret_val); 
   }
 }
 
@@ -84,27 +78,26 @@ void proc1(void)
 {
   while(1)
   {
-    volatile int status = 0;
-    volatile int ret_val = 10, ff;
-    MSG *msg = (void *)0;
-  
-    int x1 = 100, x2 = 200, x3 = 300;
-    // Send message for proc2
-    msg = (MSG *) request_memory_block();
-    msg->msg_data = &x1;
-    msg->msg_type = 1;
-    status = send_message(2, msg);
+    volatile int status = 10;
+    volatile int ret_val = 10;
+    volatile int send_status = 10;
+    int x1 = 10, x2 = 20;
+    volatile MSG *msg = (volatile MSG *) request_memory_block();
+    volatile MSG *msg2 = (volatile MSG *) request_memory_block();
     
-
-    if (status == 0) {
-      NUM_TESTS_PASSED++;
-      //crt_proc("G013_test: test 1 OK\n\r");
+    msg->msg_data = (void *) &x1;
+    msg->msg_type = 1;
+    send_status = send_message(2, (MSG *)msg);
+    
+    msg2->msg_data = (void *) &x2;
+    msg2->msg_type = 1;
+    send_status = send_status | send_message(2, (MSG *)msg2);
+    
+    if (send_status == 0) {
+      crt_proc("G013_test: test 1 OK\n\r");
     } else {
-      NUM_TESTS_FAILED++;
-     // crt_proc("G013_test: test 1 FAIL\n\r");
+      crt_proc("G013_test: test 1 FAIL\n\r");
     }
-    ff = release_memory_block((void *)msg);
-
     ret_val = release_processor();
   }
 }
@@ -114,18 +107,25 @@ void proc2(void)
 {
   while(1)
   {
-    int sender_pid;
     volatile int ret_val = 10;
-    MSG *msg = (MSG *)receive_message(&sender_pid);
-    if (sender_pid == 1 && msg != (void *)0 && (*((int *)msg->msg_data) == 100)) {
-        NUM_TESTS_PASSED++;
+    int sender_pid = -1;
+    int pass = 0;
+    volatile MSG *msg = receive_message(&sender_pid);
+    volatile MSG *msg2 = receive_message(&sender_pid);
+    if (*((int *)msg->msg_data) == 10 && *((int *)msg2->msg_data) == 20) {
+      pass++;
+      ret_val = release_memory_block(msg);
+      ret_val = ret_val | release_memory_block(msg2);
+    }
+
+    if (ret_val == 0) {
+      pass++;
+    }
+    if (pass == 2) {
       crt_proc("G013_test: test 2 OK\n\r");
     } else {
-        NUM_TESTS_FAILED++;
       crt_proc("G013_test: test 2 FAIL\n\r");
     }
-  
-    release_memory_block(msg);
     ret_val = release_processor();
   }
 }
@@ -133,46 +133,28 @@ void proc2(void)
 // process 3: Testing for multiple send/multiple receive
 void proc3(void)
 {
+  while(1) {
   volatile int ret_val = 10;
-  int pass = 0;
-  
-  int sender_pid;
-  MSG *msg = receive_message(&sender_pid);
-  if (sender_pid == 1 && msg != (void *)0 && (*((int *)msg->msg_data) == 200)) {
-    pass++;
-  }
-  release_memory_block((void *)msg);
-  
-  msg = receive_message(&sender_pid);
-  if (sender_pid == 1 && msg != (void *)0 && (*((int *)msg->msg_data) == 300)) {
-    pass++;
-  }
-  release_memory_block((void *)msg);
-  
-  
-  if (pass == 2) {
-    NUM_TESTS_PASSED++;
-  crt_proc("G013_test: test 3 OK\n\r");
-} else {
-    NUM_TESTS_FAILED++;
-  crt_proc("G013_test: test 3 FAIL\n\r");
-}
   ret_val = release_processor();
-
+ }
 }
 
 // process 4: set process priority, then block by requesting memory (already gone from proc1)
 void proc4(void)
 {
+  while (1) {
   volatile int ret_val = 10;
   ret_val = release_processor();
+  }
 }
 
 // process 5: test registers/general variable allocation and results of proc4
 void proc5(void)
 {
+  while (1) {
   volatile int ret_val = 10;
   ret_val = release_processor();
+  }
 }
 
 // process 6: end of tests, print results
@@ -183,13 +165,6 @@ void proc6(void)
     ret_val = release_processor();
 			if (!TESTEND) {
 			TESTEND = 1;
-      crt_proc("\n\rG013_test: ");
-      crt_output_int(NUM_TESTS_PASSED); 
-      crt_proc("/7 tests OK");
-      crt_proc("\n\rG013_test: ");
-      crt_output_int(NUM_TESTS_FAILED); 
-      crt_proc("/7 tests FAIL");
-      crt_proc("\n\rG013_test: END");
 		}
   }
 }
