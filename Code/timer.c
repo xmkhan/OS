@@ -107,6 +107,7 @@ uint32_t timer_init(uint8_t n_timer)
   timer_pcb->priority = 1;
   timer_pcb->type = INTERRUPT;
   timer_pcb->state = NEW;
+  timer_pcb->head = (void *) 0;
   timer_pcb->next = (void *) 0;
   timer_process.pcb = timer_pcb;
   timer_process.start_loc = (uint32_t) timeout_i_process;
@@ -190,7 +191,7 @@ void timeout_i_process(void)
     MSG* env = dequeue_q(head, MSG_T); // We have acquired a 'msg'
     unsigned int pid = env->destination_pid;
     send_message(pid, env);
-  }  
+  } 
 }
 
 long get_current_time(void)

@@ -14,7 +14,7 @@ void crt_init(void);
 void int_to_char_star(int input, volatile char* buffer);
 
 // output to display
-void crt_proc(void* m);
+void crt_proc(char* m);
 
 // output an int to display
 void crt_output_int(int input);
