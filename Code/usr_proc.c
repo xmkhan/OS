@@ -91,7 +91,7 @@ void proc1(void)
     
     msg2->msg_data = (void *) &x2;
     msg2->msg_type = 1;
-    send_status = send_status | send_message(2, (MSG *)msg2);
+    send_status = send_status  | send_message(2, (MSG *)msg2);
     
     if (send_status == 0) {
       crt_proc("G013_test: test 1 OK\n\r");
@@ -114,8 +114,8 @@ void proc2(void)
     volatile MSG *msg2 = receive_message(&sender_pid);
     if (*((int *)msg->msg_data) == 10 && *((int *)msg2->msg_data) == 20) {
       pass++;
-      ret_val = release_memory_block(msg);
-      ret_val = ret_val | release_memory_block(msg2);
+      ret_val = release_memory_block((void *)msg);
+      ret_val = ret_val | release_memory_block((void *)msg2);
     }
 
     if (ret_val == 0) {

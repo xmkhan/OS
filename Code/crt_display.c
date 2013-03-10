@@ -26,6 +26,7 @@ void crt_init(void) {
   crt_pcb->priority = 1;
   crt_pcb->type = INTERRUPT;
   crt_pcb->state = NEW;
+  crt_pcb->head = (void *) 0;
   crt_pcb->next = (void *) 0;
   crt_process.pcb = crt_pcb;
   crt_process.start_loc = (uint32_t) crt_interrupt;
@@ -109,7 +110,7 @@ void crt_interrupt(void) {
   msg = (MSG*) receive_message(&sender_ID);
   crt_proc(msg->msg_data);
   
-  k_release_memory_block(msg);
+  k_release_memory_block((void *)msg);
 }
 
 /*

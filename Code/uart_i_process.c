@@ -166,7 +166,7 @@ void c_UART0_IRQHandler(void)
 	char input_display[3];
 	uint8_t input_char;
 	MSG *key_msg = (void *)0;
-	int msg_send_status;
+	int msg_send_status = 10;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	
 	__disable_irq();
