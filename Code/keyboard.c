@@ -1,4 +1,5 @@
 #include "keyboard.h"
+#include "process.h"
 #include "memory.h"
 #include "timer.h"
 #include "message.h"
@@ -10,6 +11,43 @@ int WALL_CLOCK_RUNNING = 0;
 
 Process keyboard_process;
 PCB* keyboard_pcb;
+Process wall_clock_process;
+PCB *wall_clock_pcb;
+
+void wall_clock_init(void) {
+  uint32_t *sp = (void *)0;
+  int j = 0;
+  
+  // initialize keyboard display process
+  wall_clock_pcb = k_request_memory_block();
+  wall_clock_process.stack = k_request_memory_block();
+  
+  wall_clock_pcb->pid = WALL_CLOCK_PID;
+  wall_clock_pcb->priority = 1;
+  wall_clock_pcb->type = INTERRUPT;
+  wall_clock_pcb->state = NEW;
+  wall_clock_pcb->head = (void *) 0;
+  wall_clock_pcb->next = (void *) 0;
+  wall_clock_process.pcb = wall_clock_pcb;
+  wall_clock_process.start_loc = (uint32_t)wall_clock;
+     
+  sp = (uint32_t *)((uint32_t)wall_clock_process.stack + MEMORY_BLOCK_SIZE);
+    
+  /* 8 bytes alignement adjustment to exception stack frame */
+  if (!(((uint32_t)sp) & 0x04)) {
+      --sp;
+  }
+    
+  *(--sp)  = 0x01000000;              /* user process initial xPSR */ 
+  *(--sp)  = wall_clock_process.start_loc ;  /* PC contains the entry point of the process */
+
+  for (j=0; j < 6; j++) {             /* R0-R3, R12 are cleared with 0 */
+    *(--sp) = 0x0;
+  }  
+  wall_clock_process.pcb->mp_sp = (uint32_t *)sp;
+  
+  insert_process_pq(wall_clock_process.pcb);
+}
 
 void keyboard_init(void) {
   uint32_t *sp = (void *)0;
@@ -84,6 +122,7 @@ void keyboard_proc(char *input)
 {
 	volatile char command[2];
 	volatile int i = 0;
+	PCB *saved_process = (void *)0;
 	
 	volatile char *b = input;
 	
@@ -119,10 +158,7 @@ void keyboard_proc(char *input)
   
 			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(wall_clock_process);
-  
-			// call i process
-			keyboard_proc((char *)g_UART0_buffer);
+				k_context_switch(wall_clock_pcb);
   
 			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
@@ -131,7 +167,7 @@ void keyboard_proc(char *input)
 		else if (command[1] == 'S') {
 			// wall clock set
 			WALL_CLOCK_START_TIMER = get_current_time();
-			ts_to_hms(hms_to_ts(b), CURR_TIME_BUFFER);
+			ts_to_hms(hms_to_ts((char *)b), CURR_TIME_BUFFER);
 			WALL_CLOCK_RUNNING = 1;
 		}
 		else if (command[1] == 'T') {
@@ -141,7 +177,7 @@ void keyboard_proc(char *input)
 	}
 }
 
-void wall_clock_process(void)
+void wall_clock(void)
 {
 	int counter = WALL_CLOCK_START_TIMER;
 	while (WALL_CLOCK_RUNNING) {

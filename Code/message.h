@@ -27,7 +27,10 @@ void message_init(void);
  * @return If mailbox (queue) empty return (void *)0, else MSG *
  */
 MSG *get_message_pid(int process_ID);
-MSG *get_message(PCB *pcb);
+
+MSG *k_get_message(PCB *);
+#define get_message(pcb) _get_message((unsigned int) k_get_message, pcb)
+extern MSG *_get_message(unsigned int p_func, PCB *pcb) __SVC_0;
 
 /**
  * API: send_message (non-blocking)

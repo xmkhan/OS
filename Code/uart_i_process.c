@@ -201,11 +201,18 @@ void c_UART0_IRQHandler(void)
 				k_context_switch(saved_process);
 			
 			input_display[0] = '\n';
-			input_display[1] = '\r';
-			input_display[2] = '\0';
+			input_display[1] = '\0';
 			key_msg->msg_data = input_display;
-			msg_send_status = send_message(CRT_PID, key_msg);
-			crt_interrupt();
+			msg_send_status = k_send_message(CRT_PID, key_msg);
+			crt_i_process();
+			
+			g_UART0_TX_empty = 1;
+			
+			input_display[0] = '\r';
+			input_display[1] = '\0';
+			key_msg->msg_data = input_display;
+			msg_send_status = k_send_message(CRT_PID, key_msg);
+			crt_i_process();
 			
 			//g_UART0_TX_empty = 1;
 			//input_display[0] = '\r';
@@ -216,7 +223,7 @@ void c_UART0_IRQHandler(void)
 		else {
 			key_msg->msg_data = input_display;
 			msg_send_status = k_send_message(CRT_PID, key_msg);
-			crt_interrupt();
+			crt_i_process();
 		}
 		
 			if ( g_UART0_count == BUFSIZE ) {

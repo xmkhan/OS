@@ -59,7 +59,6 @@ PCB *lookup_pid(int pid) {
 		case CRT_PID:
 			return crt_pcb;
 	}
-	
 	return (void *)0;
 }
 

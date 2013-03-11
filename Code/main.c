@@ -17,9 +17,10 @@ void __init()
    memory_init();
    process_init();
    message_init();
-   timer_init(0);
 	 keyboard_init();
    crt_init();
+   timer_init(0);
+	 wall_clock_init();
 }
 
 int main() {
@@ -35,8 +36,8 @@ int main() {
   __set_CONTROL(__get_CONTROL() | BIT(0)); 
     
   // Output test results
-  crt_proc("G013_test: START\n\r");
-  crt_proc("G013_test: total 7 tests\n\r");
+  crt_print("G013_test: START\n\r");
+  crt_print("G013_test: total 7 tests\n\r");
   
   ret_val = release_processor();
 
