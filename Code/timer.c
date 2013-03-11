@@ -104,7 +104,7 @@ uint32_t timer_init(uint8_t n_timer)
   timer_process.stack = k_request_memory_block();
   
   timer_pcb->pid = TIMER_PID;
-  timer_pcb->priority = 1;
+  timer_pcb->priority = 99;
   timer_pcb->type = INTERRUPT;
   timer_pcb->state = NEW;
   timer_pcb->head = (void *) 0;
@@ -179,11 +179,11 @@ void timeout_i_process(void)
   MSG* msg = (void *) 0;
   
   g_timer_count++;
-  msg = get_message(timer_pcb);
+  msg = k_get_message(timer_pcb);
   while(msg != (void*) 0)
   {
     enqueue_q(head, msg, DLY_MSG_T); // enqueue the msg
-    msg = get_message(timer_pcb);
+    msg = k_get_message(timer_pcb);
   }
   
   while(head != (void *) 0 && head->expiry_time <= g_timer_count)

@@ -23,13 +23,13 @@ void crt_init(void) {
   crt_process.stack = k_request_memory_block();
   
   crt_pcb->pid = CRT_PID;
-  crt_pcb->priority = 1;
+  crt_pcb->priority = 99;
   crt_pcb->type = INTERRUPT;
   crt_pcb->state = NEW;
   crt_pcb->head = (void *) 0;
   crt_pcb->next = (void *) 0;
   crt_process.pcb = crt_pcb;
-  crt_process.start_loc = (uint32_t) crt_interrupt;
+  crt_process.start_loc = (uint32_t) crt_i_process;
      
   sp = (uint32_t *)((uint32_t)crt_process.stack + MEMORY_BLOCK_SIZE);
     
@@ -47,31 +47,23 @@ void crt_init(void) {
   crt_process.pcb->mp_sp = (uint32_t *)sp;
   
   insert_process_pq(crt_process.pcb);
-
 }
 
-/**
- * System function available to processes
- * for non-blocking output to console
- * @param m - the message to be printed
- */
-void crt_proc(char* m)
-{
-  volatile int length = 0;
-  char* b = m;
+void crt_print(char* input) {
+  PCB* saved_process = current_process;
+  MSG* msg = (MSG*) request_memory_block();
+  msg->msg_data = (void*) input;
+  msg->msg_type = 1;
   
-  if(!b) return;
+  send_message(CRT_PID, msg);
   
-  //Find the length of the message
-  while(*b != '\0') {
-    b++;
-    length++;
-  }
+  if(!(saved_process->pid == 0 && saved_process->state == NEW))
+    context_switch(crt_pcb);
   
-  if(length == 0) return;
+  crt_i_process();
   
-  //non-blocking output
-  uart_i_process( 0, (uint8_t* ) m, length );
+  if(!(saved_process->pid == 0 && saved_process->state == NEW))
+    context_switch(saved_process);  
 }
 
 /**
@@ -100,17 +92,32 @@ void int_to_char_star(int input, volatile char* b) {
 
 void crt_output_int(int input) {
   int_to_char_star(input, buffer);
-  crt_proc(buffer);
+  crt_print(buffer);
 }
 
-void crt_interrupt(void) {
-  int sender_ID;
+void crt_i_process(void) {
+  volatile int length = 0;
+  char* b = (void*) 0;
   MSG *msg = (void*) 0;
   
-  msg = (MSG*) receive_message(&sender_ID);
-  crt_proc(msg->msg_data);
+  msg = (MSG*) get_message(crt_pcb);
+  if(msg == (void*) 0) return;
   
-  k_release_memory_block((void *)msg);
+  b = msg->msg_data;
+  if(!b) return;
+  
+  //Find the length of the message
+  while(*b != '\0') {
+    b++;
+    length++;
+  }
+  
+  if(length == 0) return;
+  
+  //non-blocking output
+  uart_i_process( 0, (uint8_t* ) msg->msg_data, length );
+  
+  release_memory_block((void *)msg);
 }
 
 /*
@@ -130,7 +137,7 @@ void hot_key_handler(void) {
   p_states[j++] = "Exit"; 
 
   //the categories we would be outputing
-  crt_proc((void*)header);
+  crt_print((void*)header);
   
   //iterate through every process
   //and output relevant information
@@ -144,7 +151,7 @@ void hot_key_handler(void) {
     for(;n < col_empty; n++) {
       buffer[n] = ' ';
     }
-    crt_proc((void*)buffer);
+    crt_print((void*)buffer);
     
     //output the priority
     int_to_char_star(iterate->priority, buffer);
@@ -155,14 +162,14 @@ void hot_key_handler(void) {
     }
     
     //output the state
-    crt_proc((void*)buffer);
-    crt_proc((void*) p_states[iterate->state]);
+    crt_print((void*)buffer);
+    crt_print((void*) p_states[iterate->state]);
     
     //Print a new line at the end
     buffer[0] = '\n';
     buffer[1] = '\r';
     buffer[2] = '\0';
-    crt_proc((void*) buffer);
+    crt_print((void*) buffer);
   }
 }
 

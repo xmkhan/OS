@@ -54,6 +54,9 @@ PCB *lookup_pid(int pid);
  * Call for context switching, switches to next RDY process in line
  */
 extern int k_context_switch(PCB* process);
+#define context_switch(process) _context_switch((unsigned int)k_context_switch, process)
+extern int _context_switch(unsigned int p_func, PCB *process) __SVC_0;
+
 extern int k_release_processor(void);
 #define release_processor() _release_processor((unsigned int)k_release_processor)
 extern int _release_processor(unsigned int p_func) __SVC_0;

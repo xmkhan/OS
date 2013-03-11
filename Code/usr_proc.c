@@ -94,9 +94,9 @@ void proc1(void)
     send_status = send_status  | send_message(2, (MSG *)msg2);
     
     if (send_status == 0) {
-      crt_proc("G013_test: test 1 OK\n\r");
+      crt_print("G013_test: test 1 OK\n\r");
     } else {
-      crt_proc("G013_test: test 1 FAIL\n\r");
+      crt_print("G013_test: test 1 FAIL\n\r");
     }
     ret_val = release_processor();
   }
@@ -122,9 +122,9 @@ void proc2(void)
       pass++;
     }
     if (pass == 2) {
-      crt_proc("G013_test: test 2 OK\n\r");
+      crt_print("G013_test: test 2 OK\n\r");
     } else {
-      crt_proc("G013_test: test 2 FAIL\n\r");
+      crt_print("G013_test: test 2 FAIL\n\r");
     }
     ret_val = release_processor();
   }

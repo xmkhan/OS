@@ -4,6 +4,7 @@
 #include "usr_proc.h"
 #include "pq.h"
 #include "timer.h"
+#include "crt_display.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -52,9 +53,14 @@ PCB *lookup_pid(int pid) {
   }
   
   // check if it is timer process
-  if(pid == TIMER_PID)
-    return timer_pcb;
-  
+  switch(pid)
+  {
+    case TIMER_PID:
+      return timer_pcb;
+    case CRT_PID:
+      return crt_pcb;
+  }
+
 	return (void *)0;
 }
 
