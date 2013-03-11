@@ -5,6 +5,7 @@
 #include "process.h"
 #include "message.h"
 #include "timer.h"
+#include "keyboard.h"
 #include "crt_display.h"
 
 
@@ -17,6 +18,7 @@ void __init()
    process_init();
    message_init();
    timer_init(0);
+	 keyboard_init();
    crt_init();
 }
 

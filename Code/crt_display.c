@@ -107,7 +107,7 @@ void crt_interrupt(void) {
   int sender_ID;
   MSG *msg = (void*) 0;
   
-  msg = (MSG*) receive_message(&sender_ID);
+  msg = (MSG*)k_receive_message(&sender_ID);
   crt_proc(msg->msg_data);
   
   k_release_memory_block((void *)msg);
