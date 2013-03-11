@@ -85,7 +85,7 @@ int k_release_memory_block(void* p_mem_blk) {
   PCB* blkProcess = NULL;
   while(cur_mem != 0)
   {
-    if(cur_mem->address == (unsigned int) ((void *) p_mem_blk))
+    if(cur_mem->address == (unsigned int) p_mem_blk)
     {
       cur_mem->used = 0;
       

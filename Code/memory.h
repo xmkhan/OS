@@ -8,7 +8,7 @@
 #endif
 
 // Configuration parameters for memory
-#define MEMORY_BLOCK_SIZE 128
+#define MEMORY_BLOCK_SIZE 256
 
 // MemNode struct which contains information about the memory block,
 // and is stored as a memory at the start of each memory block
