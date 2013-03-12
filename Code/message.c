@@ -32,6 +32,7 @@ MSG *k_get_message(PCB *pcb) {
 int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_process_pid, long delay) {
   MSG *msg = (void *)0;
   PCB *dest_proc = (void *) 0;
+  q_type type = MSG_T;
 
   if (MessageEnvelope == (void *) 0) return -1;
 
@@ -59,7 +60,9 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
     return 1;
   }
   
-  enqueue_q(&(dest_proc->head), msg, MSG_T); // enqueue the msg to the destination_proc's queue
+  if (delay > 0)
+    type = DLY_MSG_T;
+  enqueue_q(&(dest_proc->head), msg, type); // enqueue the msg to the destination_proc's queue
   
 
   if (dest_proc->state == BLKD && delay == 0) {

@@ -59,7 +59,7 @@ extern void* _receive_message(unsigned int p_func, int *sender_ID) __SVC_0;
  * @param delay After how many milliseconds to send the message
  */
 int k_delayed_send(int , void *, int);
-#define delayed_send(process_ID, MessageEnvelope, delay) _send_message((unsigned int) k_send_message, process_ID, MessageEnvelope, delay)
+#define delayed_send(process_ID, MessageEnvelope, delay) _delayed_send((unsigned int) k_delayed_send, process_ID, MessageEnvelope, delay)
 extern int _delayed_send(unsigned int p_func, int process_ID, void *MessageEnvelope, int delay) __SVC_0;
 
 #endif
