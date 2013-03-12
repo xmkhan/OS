@@ -167,7 +167,6 @@ void c_UART0_IRQHandler(void)
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
 	MSG *key_msg = (void *)0;
-	int msg_send_status = 10;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	
 	__disable_irq();
@@ -203,7 +202,7 @@ void c_UART0_IRQHandler(void)
 			input_display[0] = '\n';
 			input_display[1] = '\0';
 			key_msg->msg_data = input_display;
-			msg_send_status = k_send_message(CRT_PID, key_msg);
+			k_send_message(CRT_PID, key_msg);
 			crt_i_process();
 			
 			g_UART0_TX_empty = 1;
@@ -211,7 +210,7 @@ void c_UART0_IRQHandler(void)
 			input_display[0] = '\r';
 			input_display[1] = '\0';
 			key_msg->msg_data = input_display;
-			msg_send_status = k_send_message(CRT_PID, key_msg);
+			k_send_message(CRT_PID, key_msg);
 			crt_i_process();
 			
 			//g_UART0_TX_empty = 1;
@@ -222,7 +221,7 @@ void c_UART0_IRQHandler(void)
 		}
 		else {
 			key_msg->msg_data = input_display;
-			msg_send_status = k_send_message(CRT_PID, key_msg);
+			k_send_message(CRT_PID, key_msg);
 			crt_i_process();
 		}
 		

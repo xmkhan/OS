@@ -23,8 +23,8 @@ void wall_clock_init(void) {
   wall_clock_process.stack = k_request_memory_block();
   
   wall_clock_pcb->pid = WALL_CLOCK_PID;
-  wall_clock_pcb->priority = 1;
-  wall_clock_pcb->type = INTERRUPT;
+  wall_clock_pcb->priority = 10;
+  wall_clock_pcb->type = USER;
   wall_clock_pcb->state = NEW;
   wall_clock_pcb->head = (void *) 0;
   wall_clock_pcb->next = (void *) 0;
@@ -99,22 +99,22 @@ void ts_to_hms(int ts, char *buffer)
 	int mins;
 	int secs;
 	ts %= 86400;
-	hours = ts % 3600;
-	ts /= 3600;
-	mins = ts % 60;
-	ts /= 60;
+	hours = ts / 3600;
+	ts %= 3600;
+	mins = ts / 60;
+	ts %= 60;
 	secs = ts;
 	
-	buffer[0] = hours / 10;
-	buffer[1] = hours % 10;
+	buffer[0] = (hours / 10) + 48;
+	buffer[1] = (hours % 10) + 48;
 	buffer[2] = ':';
-	buffer[3] = mins / 10;
-	buffer[4] = mins % 10;
+	buffer[3] = (mins / 10) + 48;
+	buffer[4] = (mins % 10) + 48;
 	buffer[5] = ':';
-	buffer[6] = secs / 10;
-	buffer[7] = secs % 10;
-	buffer[8] = '\n';
-	buffer[9] = '\r';
+	buffer[6] = (secs / 10) + 48;
+	buffer[7] = (secs % 10) + 48;
+	buffer[8] = '\r';
+	buffer[9] = '\n';
 	buffer[10] = '\0';
 }
 
@@ -155,24 +155,37 @@ void keyboard_proc(char *input)
 			WALL_CLOCK_RUNNING = 1;
 			
 			saved_process = current_process;
-  
+			
+			__enable_irq();
+			
 			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
 				k_context_switch(wall_clock_pcb);
-  
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(saved_process);
+			
+			__disable_irq();
 		}
 		else if (command[1] == 'S') {
 			// wall clock set
 			WALL_CLOCK_START_TIMER = get_current_time();
 			ts_to_hms(hms_to_ts((char *)b), CURR_TIME_BUFFER);
 			WALL_CLOCK_RUNNING = 1;
+
+			saved_process = current_process;
+			
+			__enable_irq();
+			
+			// check if at start the timer started before processes started being schedule, if so no context switch
+			if(!(saved_process->pid == 0 && saved_process->state == NEW))
+				k_context_switch(wall_clock_pcb);
+			
+			__disable_irq();
 		}
 		else if (command[1] == 'T') {
 			// wall clock terminate
 			WALL_CLOCK_RUNNING = 0;
+			// check if at start the timer started before processes started being schedule, if so no context switch
+			if(!(saved_process->pid == 0 && saved_process->state == NEW))
+				k_context_switch(saved_process);
 		}
 	}
 }
@@ -180,12 +193,13 @@ void keyboard_proc(char *input)
 void wall_clock(void)
 {
 	int counter = WALL_CLOCK_START_TIMER;
+	int comparison = WALL_CLOCK_START_TIMER;
 	while (WALL_CLOCK_RUNNING) {
 		counter = get_current_time();
-		if (counter - WALL_CLOCK_START_TIMER >= 1000) {
+		if (counter - comparison >= 1000) {
 			ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
 			crt_print(CURR_TIME_BUFFER);
-			counter = 0;
+			comparison = counter;
 		}
 	}
 }
