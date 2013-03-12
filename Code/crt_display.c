@@ -96,12 +96,16 @@ void crt_output_int(int input) {
   crt_print(buffer);
 }
 
-void crt_i_process(void) {
+void crt_i_process(void) {	
   volatile int length = 0;
   char* b = (void*) 0;
   MSG *msg = (void*) 0;
-  
-  msg = (MSG*) get_message(crt_pcb);
+
+	if (__get_CONTROL() == 0) 
+		msg = (MSG*) get_message(crt_pcb);
+	else 
+		msg = (MSG*) k_get_message(crt_pcb);
+	
   if(msg == (void*) 0) return;
   
   b = msg->msg_data;
@@ -117,8 +121,13 @@ void crt_i_process(void) {
   
   //non-blocking output
   uart_i_process( 0, (uint8_t* ) msg->msg_data, length );
-  
-  release_memory_block((void *)msg);
+	
+	if (__get_CONTROL() == 0) {
+		release_memory_block((void *)msg);
+	}
+	else {
+		k_release_memory_block((void *)msg);
+	}
 }
 
 /*
