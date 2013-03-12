@@ -182,12 +182,15 @@ void crt_i_process(void) {
   //non-blocking output
   uart_i_process( 0, (uint8_t* ) msg->msg_data, length );
 	
-	if (__get_CONTROL() == BIT(0)) {
-		release_memory_block((void *)msg);
-	}
-	else {
-		k_release_memory_block((void *)msg);
-	}
+  if(msg->msg_type != 2)
+  {
+    if (__get_CONTROL() == BIT(0)) {
+      release_memory_block((void *)msg);
+    }
+    else {
+      k_release_memory_block((void *)msg);
+    }
+  }
 }
 
 /*
@@ -262,7 +265,6 @@ void hot_key_handler(void) {
   }
 	msg = (MSG *)receive_message(&sender_id);
 	saved_process = (PCB *)msg->msg_data;
-	release_memory_block(msg);
 	context_switch(saved_process);
 	}
 }

@@ -16,6 +16,8 @@ volatile uint8_t g_UART0_TX_empty=1;
 volatile uint8_t g_UART0_buffer[BUFSIZE];
 volatile uint32_t g_UART0_count = 0;
 PCB *saved_process;
+MSG *key_msg = (void *)0;
+
 
 /**
  * @brief: initialize the n_uart
@@ -137,7 +139,11 @@ int i_uart_init(int n_uart) {
 
 	/* Step 6b: enable the UART interrupt from the system level */
 	NVIC_EnableIRQ(UART0_IRQn); /* CMSIS function */
-
+  
+  // Allocate memory for keyboard so that when memory runs out keyboard features used for debugging still work
+  key_msg = (MSG*) k_request_memory_block();  
+	key_msg->msg_type = 2;
+  
 	return 0;
 }
 
@@ -167,7 +173,6 @@ void c_UART0_IRQHandler(void)
 	char input_display[3];
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
-	MSG *key_msg = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	
 	__disable_irq();
@@ -177,8 +182,6 @@ void c_UART0_IRQHandler(void)
 
 	if (IIR_IntId & IIR_RDA) { /* Receive Data Avaialbe */
 		/* read UART. Read RBR will clear the interrupt */
-		key_msg = (MSG *)k_request_memory_block();
-		key_msg->msg_type = 1;
 		input_char = pUart->RBR;
 		input_display[0] = input_char;
 		input_display[1] = '\0';
