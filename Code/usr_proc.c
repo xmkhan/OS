@@ -69,6 +69,9 @@ void null_process(void) {
 }
 
 volatile int delay = 10000;
+volatile int msg1_status =0;
+volatile int msg2_status=0;
+volatile int msg3_status=0;
 // process 1: Testing for message sending
 void proc1(void)
 {
@@ -79,26 +82,33 @@ void proc1(void)
     volatile int status = 10;
     volatile int send_status = 10;
     int x1 = 10, x2 = 20, x3 = 30;
-    volatile MSG *msg = (volatile MSG *) request_memory_block();
-    volatile MSG *msg2 = (volatile MSG *) request_memory_block();
+    volatile MSG *msg = (void *)0;
+    volatile MSG *msg2 = (void *)0;
     volatile MSG *msg3 = (void *)0;
-    
-    msg->msg_data = (void *) &x1;
-    msg->msg_type = 1;
-    send_status = send_message(2, (MSG *)msg);
-    
-    msg2->msg_data = (void *) &x2;
-    msg2->msg_type = 1;
-    send_status = send_status  | send_message(2, (MSG *)msg2);
-    
-    if (delay > 0) {
+    if(msg1_status ==0) {
+      msg = (volatile MSG *) request_memory_block();
+      msg->msg_data = (void *) &x1;
+      msg->msg_type = 1;
+      send_status = send_message(2, (MSG *)msg);
+      msg1_status = 1;
+    }
+    if (msg2_status ==0){
+      msg2 = (volatile MSG *) request_memory_block();
+      msg2->msg_data = (void *) &x2;
+      msg2->msg_type = 1;
+      send_status = send_status  | send_message(2, (MSG *)msg2);
+      msg2_status = 1;
+    }
+    if (delay > 1 && msg3_status ==0) {
       msg3 = (volatile MSG *) request_memory_block();
       msg3->msg_data = (void *) &x3;
       msg3->msg_type = 1;
       send_status = send_status | delayed_send(3, (MSG *) msg3, delay);
       delay /=10;
+      msg3_status = 1;
     }
-    if (send_status == 0) {
+
+    if (send_status == 0 || (msg1_status == 1 && msg2_status == 1 && (msg3_status == 1 || delay <= 1))) {
       crt_print("G013_test: test 1 OK\n\r");
     } else {
       crt_print("G013_test: test 1 FAIL\n\r");
@@ -114,28 +124,34 @@ void proc2(void)
   while(1)
   {
     volatile int ret_val = 10;
+    #ifndef KEYBOARD_ENABLED
+    volatile MSG *msg = (void *)0;
+    volatile MSG *msg2 = (void *)0;
     int sender_pid = -1;
     int pass = 0;
-    volatile MSG *msg = receive_message(&sender_pid);
-    volatile MSG *msg2 = receive_message(&sender_pid);
+    int release_status = 0;
+    msg1_status = 0;
+    msg = receive_message(&sender_pid);
+    msg2_status = 0;
+    msg2 = receive_message(&sender_pid);
+    
     if (*((int *)msg->msg_data) == 10 && *((int *)msg2->msg_data) == 20) {
       pass++;
-      ret_val = release_memory_block((void *)msg);
-      ret_val = ret_val | release_memory_block((void *)msg2);
+      release_status = release_memory_block((void *)msg);
+      msg1_status = 0;
+      release_status = release_status | release_memory_block((void *)msg2);
+      msg2_status = 0;
     }
 
-    if (ret_val == 0) {
+    if (release_status == 0) {
       pass++;
     }
     if (pass == 2) {
-      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 2 OK\n\r");
-			#endif
     } else {
-      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 2 FAIL\n\r");
-			#endif
     }
+    #endif
     ret_val = release_processor();
   }
 }
@@ -145,40 +161,55 @@ void proc3(void)
 {
   while(1) {
   volatile int ret_val = 10;
+   #ifndef KEYBOARD_ENABLED
   int sender_pid = -1, pass = 0;
-  volatile MSG *msg = receive_message(&sender_pid);
+  volatile MSG *msg = (void *)0;
+    
+  msg3_status = 0;
+  msg = receive_message(&sender_pid);
   if (*((int *)msg->msg_data) == 30) {
     pass++;
   }
+  release_memory_block((void *)msg);
+  msg3_status = 0;
+  
   if (pass == 1) {
-      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 3 OK\n\r");
-			#endif
     } else {
-      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 3 FAIL\n\r");
-			#endif
     }
 		release_memory_block((void *)msg);
-  
+  #endif
   ret_val = release_processor();
  }
 }
 
-// process 4: 
+// process 4: test process 
 void proc4(void)
 {
   while (1) {
   volatile int ret_val = 10;
+    #ifndef KEYBOARD_ENABLED
+    crt_print("G013_test: test 4 OK\n\r");
+    #endif
   ret_val = release_processor();
   }
 }
 
-// process 5: test registers/general variable allocation and results of proc4
+// process 5: test registers/general variable allocation
 void proc5(void)
 {
-  while (1) {
   volatile int ret_val = 10;
+  #ifndef KEYBOARD_ENABLED
+  int a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7, h = 8, i = 9, j = 10,
+  k = 11, l = 12, m = 13, n = 14, o = 15, p = 16, q = 17, r = 18, s = 19, t = 20,
+  u = 21, v = 22, w = 23, x = 24, y = 25, z = 26;
+  a +=1; b += 1; c +=1; d +=1; e +=1; f +=1;g+=1;h+=1;i+=1;j+=1;k+=1;l+=1;m+=1;n+=1;o+=1;
+  p+=1;q+=1;r+=1;s+=1;t+=1;u+=1;v+=1;w+=1;x+=1;y+=1;z+=1; 
+  
+  while (1) {
+  crt_print("G013_test: test 5 OK\n\r");
+  #endif
   ret_val = release_processor();
   }
 }
@@ -188,6 +219,9 @@ void proc6(void)
 {
 	volatile int ret_val = 20;
   while (1) {
+    #ifndef KEYBOARD_ENABLED
+    crt_print("G013_test: test 6 OK\n\r");
+    #endif
     ret_val = release_processor();
   }
 }

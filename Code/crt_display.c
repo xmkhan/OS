@@ -53,7 +53,7 @@ void crt_init(void) {
 void crt_print(char* input) {
   PCB* saved_process = current_process;
 	MSG* msg = (void *)0;
-	if (__get_CONTROL() == 0) {
+	if (__get_CONTROL() == BIT(0)) {
 		msg = (MSG*) request_memory_block();
 	}
 	else {
@@ -63,7 +63,7 @@ void crt_print(char* input) {
   msg->msg_data = (void*) input;
   msg->msg_type = 1;
   
-	if (__get_CONTROL() == 0) {
+	if (__get_CONTROL() == BIT(0)) {
 		send_message(CRT_PID, msg);
 	}
 	else {
@@ -71,7 +71,7 @@ void crt_print(char* input) {
 	}
   
   if(!(saved_process->pid == 0 && saved_process->state == NEW))
-  if (__get_CONTROL() == 0) {  
+  if (__get_CONTROL() == BIT(0)) {  
 		context_switch(crt_pcb);
 	}
 	else {
@@ -81,7 +81,7 @@ void crt_print(char* input) {
   crt_i_process();
   
   if(!(saved_process->pid == 0 && saved_process->state == NEW))
-  if (__get_CONTROL() == 0) {  
+  if (__get_CONTROL() == BIT(0)) {  
 		context_switch(saved_process);
 	}
 	else {
@@ -123,7 +123,7 @@ void crt_i_process(void) {
   char* b = (void*) 0;
   MSG *msg = (void*) 0;
 
-	if (__get_CONTROL() == 0) 
+	if (__get_CONTROL() == BIT(0)) 
 		msg = (MSG*) get_message(crt_pcb);
 	else 
 		msg = (MSG*) k_get_message(crt_pcb);
@@ -144,7 +144,7 @@ void crt_i_process(void) {
   //non-blocking output
   uart_i_process( 0, (uint8_t* ) msg->msg_data, length );
 	
-	if (__get_CONTROL() == 0) {
+	if (__get_CONTROL() == BIT(0)) {
 		release_memory_block((void *)msg);
 	}
 	else {
