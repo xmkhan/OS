@@ -2,7 +2,6 @@
 #define PROCESS_H
 
 #include <LPC17xx.h>
-#include "uart_polling.h"
 
 
 #ifndef __SVC_0

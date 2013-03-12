@@ -20,6 +20,7 @@ void __init()
 	 keyboard_init();
    crt_init();
 	 hotkey_init();
+	 i_uart_init(0);
    timer_init(0);
 	 wall_clock_init();
 }
@@ -30,7 +31,6 @@ int main() {
   // perform initalization
 	SystemInit();
   __disable_irq();
- 	i_uart_init(0);
   __init();  
 	__enable_irq();
   
