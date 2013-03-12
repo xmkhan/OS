@@ -182,15 +182,15 @@ void timeout_i_process(void)
   msg = k_get_message(timer_pcb);
   while(msg != (void*) 0)
   {
-    enqueue_q(head, msg, DLY_MSG_T); // enqueue the msg
+    enqueue_q(&head, msg, DLY_MSG_T); // enqueue the msg
     msg = k_get_message(timer_pcb);
   }
   
   while(head != (void *) 0 && head->expiry_time <= g_timer_count)
   {
-    MSG* env = dequeue_q(head, MSG_T); // We have acquired a 'msg'
+    MSG* env = dequeue_q(&head, MSG_T); // We have acquired a 'msg'
     unsigned int pid = env->destination_pid;
-    send_message(pid, env);
+    k_send_message(pid, env);
   } 
 }
 
