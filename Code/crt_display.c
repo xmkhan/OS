@@ -6,7 +6,7 @@
 #include "memory.h"
 #include "pq.h"
 
-#define NUM_STATES  6
+#define NUM_STATES  7
 #define COL_SIZE    10 
 #define BUFFER_SIZE 10
 
@@ -210,7 +210,8 @@ void hot_key_handler(void) {
   p_states[j++] = "Message BLKD";
   p_states[j++] = "Exit"; 
   p_states[j++] = "Memory BLKD";
-  
+  p_states[j++] = "Message Semaphore BLKD";
+
   //the categories we would be outputing
   crt_print((void*)header);
   
@@ -240,10 +241,13 @@ void hot_key_handler(void) {
     crt_print((void*)buffer);
     if(iterate->state == BLKD) {
       if(iterate->status == MEM_BLKD) {
-        crt_print((void*) p_states[iterate->state]);
+        crt_print((void*) p_states[5]);
       }
       else if(iterate->status == MSG_BLKD) {
-        crt_print((void*) p_states[5]);
+        crt_print((void*) p_states[3]);
+      }
+      else if(iterate->status == SEM_BLKD) {
+          crt_print((void*) p_states[6]);
       }
     }
     else {

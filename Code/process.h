@@ -16,7 +16,7 @@ typedef struct MSG MSG;
 /** Process STATES */
 typedef enum { NEW=0, RDY, RUN, BLKD, INTERRUPTED, EXIT } STATE;
 typedef enum { USER=0, INTERRUPT } TYPE;
-typedef enum { NONE=0, MEM_BLKD, MSG_BLKD } IO_STATUS;
+typedef enum { NONE=0, MEM_BLKD, MSG_BLKD, SEM_BLKD } IO_STATUS;
 
 /**
  * PCB struct containing relevent information for process management
