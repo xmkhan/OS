@@ -6,12 +6,14 @@
 
 #define INITIAL_xPSR 0x01000000
 
-#define KEYBOARD_ENABLED
+//#define KEYBOARD_ENABLED
 
-// test state variables
-int NUM_TESTS_PASSED = 0;
-int NUM_TESTS_FAILED = 0;
-
+// Tri-state variable -1 = fail, 0 = not tested, 1 = pass
+volatile int TEST1 = 0;
+volatile int TEST2 = 0;
+volatile int TEST3 = 0;
+volatile int TEST4 = 0;
+volatile int TEST5 = 0;
 // process list
 PCB *pcb_list[NUM_PROCESSES];
 Process process_list[NUM_PROCESSES];
@@ -85,6 +87,7 @@ void proc1(void)
     volatile MSG *msg = (void *)0;
     volatile MSG *msg2 = (void *)0;
     volatile MSG *msg3 = (void *)0;
+    TEST1 = 0;
     if(msg1_status ==0) {
       msg = (volatile MSG *) request_memory_block();
       msg->msg_data = (void *) &x1;
@@ -110,8 +113,10 @@ void proc1(void)
 
     if (send_status == 0 || (msg1_status == 1 && msg2_status == 1 && (msg3_status == 1 || delay <= 1))) {
       crt_print("G013_test: test 1 OK\n\r");
+      TEST1 = 1;
     } else {
       crt_print("G013_test: test 1 FAIL\n\r");
+      TEST1 = -1;
     }
 		#endif
     ret_val = release_processor();
@@ -130,6 +135,7 @@ void proc2(void)
     int sender_pid = -1;
     int pass = 0;
     int release_status = 0;
+    TEST2 = 0;
     msg1_status = 0;
     msg = receive_message(&sender_pid);
     msg2_status = 0;
@@ -148,8 +154,10 @@ void proc2(void)
     }
     if (pass == 2) {
       crt_print("G013_test: test 2 OK\n\r");
+      TEST2 = 1;
     } else {
       crt_print("G013_test: test 2 FAIL\n\r");
+      TEST2 = -1;
     }
     #endif
     ret_val = release_processor();
@@ -160,37 +168,62 @@ void proc2(void)
 void proc3(void)
 {
   while(1) {
-  volatile int ret_val = 10;
-   #ifndef KEYBOARD_ENABLED
-  int sender_pid = -1, pass = 0;
-  volatile MSG *msg = (void *)0;
-    
-  msg3_status = 0;
-  msg = receive_message(&sender_pid);
-  if (*((int *)msg->msg_data) == 30) {
-    pass++;
-  }
-  release_memory_block((void *)msg);
-  msg3_status = 0;
-  
-  if (pass == 1) {
-      crt_print("G013_test: test 3 OK\n\r");
-    } else {
-      crt_print("G013_test: test 3 FAIL\n\r");
+    volatile int ret_val = 10;
+    #ifndef KEYBOARD_ENABLED
+    int sender_pid = -1, pass = 0;
+    volatile MSG *msg = (void *)0;
+    TEST3 = 0;
+    msg3_status = 0;
+    msg = receive_message(&sender_pid);
+    if (*((int *)msg->msg_data) == 30) {
+      pass++;
     }
-		release_memory_block((void *)msg);
-  #endif
-  ret_val = release_processor();
+    release_memory_block((void *)msg);
+    msg3_status = 0;
+    
+    if (pass == 1) {
+     crt_print("G013_test: test 3 OK\n\r");
+     TEST3 = 1;
+   } else {
+     crt_print("G013_test: test 3 FAIL\n\r");
+     TEST3 = -1;
+   }
+   release_memory_block((void *)msg);
+   #endif
+   ret_val = release_processor();
  }
 }
 
-// process 4: test process 
+// process 4: test process for getting an setting process priorities
 void proc4(void)
 {
   while (1) {
-  volatile int ret_val = 10;
+    volatile int ret_val = 10;
+    volatile int pass = 0;
+    volatile int i = 0;
+    TEST4 = 0;
     #ifndef KEYBOARD_ENABLED
-    crt_print("G013_test: test 4 OK\n\r");
+    i = get_process_priority(4);
+    if ( i == 1) {
+      pass++;
+    }
+    i = set_process_priority(4, 3);
+    i = get_process_priority(4);
+    if (i == 3) {
+      pass++;
+    }
+    i = set_process_priority(4,1);
+    i = get_process_priority(4);
+    if (i == 1) {
+      pass++;
+    }
+    if (pass == 3) {
+      crt_print("G013_test: test 4 OK\n\r");
+      TEST4 = 1;
+    } else {
+      crt_print("G013_test: test 4 FAIL\n\r");
+      TEST4 = -1;
+    }
     #endif
   ret_val = release_processor();
   }
@@ -199,16 +232,30 @@ void proc4(void)
 // process 5: test registers/general variable allocation
 void proc5(void)
 {
+  while (1) {
   volatile int ret_val = 10;
+  volatile int pass = 0;
+
   #ifndef KEYBOARD_ENABLED
-  int a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7, h = 8, i = 9, j = 10,
+  volatile int a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7, h = 8, i = 9, j = 10,
   k = 11, l = 12, m = 13, n = 14, o = 15, p = 16, q = 17, r = 18, s = 19, t = 20,
   u = 21, v = 22, w = 23, x = 24, y = 25, z = 26;
   a +=1; b += 1; c +=1; d +=1; e +=1; f +=1;g+=1;h+=1;i+=1;j+=1;k+=1;l+=1;m+=1;n+=1;o+=1;
   p+=1;q+=1;r+=1;s+=1;t+=1;u+=1;v+=1;w+=1;x+=1;y+=1;z+=1; 
-  
-  while (1) {
-  crt_print("G013_test: test 5 OK\n\r");
+  TEST5 = 0;
+  if (a == 2 && b == 3 && c == 4 && d == 5 && e == 6 && f == 7 && g == 8 && h == 9
+				&& i == 10 && j == 11 && k == 12 && l == 13 && m == 14 && n == 15 && o == 16 && p == 17
+				&& q == 18 && r == 19 && s == 20 && t == 21 && u == 22 && v == 23 && w == 24 && x == 25
+				&& y == 26 && z == 27) {  
+          pass++;
+  }
+  if (pass == 1) {
+    crt_print("G013_test: test 5 OK\n\r");
+    TEST5 = 1;
+  } else {
+    crt_print("G013_test: test 5 FAIL\n\r");
+    TEST5 = -1;
+  }
   #endif
   ret_val = release_processor();
   }
@@ -217,10 +264,25 @@ void proc5(void)
 // process 6: end of tests, print results
 void proc6(void)
 {
-	volatile int ret_val = 20;
+
   while (1) {
+    volatile int ret_val = 20;
+    volatile int TEST_NUM_PASSED = 0;
     #ifndef KEYBOARD_ENABLED
-    crt_print("G013_test: test 6 OK\n\r");
+    if (TEST1 != -1) TEST_NUM_PASSED++;
+    if (TEST2 != -1) TEST_NUM_PASSED++;
+    if (TEST3 != -1) TEST_NUM_PASSED++;
+    if (TEST4 != -1) TEST_NUM_PASSED++;
+    if (TEST5 != -1) TEST_NUM_PASSED++;
+
+
+    crt_print("G013_test: ");
+    crt_output_int(TEST_NUM_PASSED);
+    crt_print("/5 tests OK\n\r");
+    
+    crt_print("G013_test: ");
+    crt_output_int(5-TEST_NUM_PASSED);
+    crt_print("/5 tests FAIL\n\r");
     #endif
     ret_val = release_processor();
   }

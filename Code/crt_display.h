@@ -27,11 +27,13 @@ void crt_output_int(int input);
 
 // crt i-process
 void crt_i_process(void);
+void k_crt_i_process(void);
 
 // handle hot-key key press
 void hot_key_handler(void);
 
 void crt_print(char*);
+void k_crt_print(char*);
 
 #endif
 

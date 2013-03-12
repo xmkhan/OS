@@ -116,8 +116,7 @@ void ts_to_hms(int ts, char *buffer)
 	buffer[6] = (secs / 10) + 48;
 	buffer[7] = (secs % 10) + 48;
 	buffer[8] = '\r';
-	buffer[9] = '\n';
-	buffer[10] = '\0';
+	buffer[9] = '\0';
 }
 
 void keyboard_proc(char *input)
