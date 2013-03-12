@@ -6,7 +6,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
-#define KEYBOARD_ENABLED 0
+//#define KEYBOARD_ENABLED
 
 // test state variables
 int NUM_TESTS_PASSED = 0;
@@ -68,14 +68,15 @@ void null_process(void) {
   }
 }
 
-int delay = 10000;
+volatile int delay = 10000;
 // process 1: Testing for message sending
 void proc1(void)
 {
   while(1)
   {
+		volatile int ret_val = 10;
+		#ifndef KEYBOARD_ENABLED
     volatile int status = 10;
-    volatile int ret_val = 10;
     volatile int send_status = 10;
     int x1 = 10, x2 = 20, x3 = 30;
     volatile MSG *msg = (volatile MSG *) request_memory_block();
@@ -98,12 +99,11 @@ void proc1(void)
       delay /=10;
     }
     if (send_status == 0) {
-      if (!KEYBOARD_ENABLED)
       crt_print("G013_test: test 1 OK\n\r");
     } else {
-      if (!KEYBOARD_ENABLED)
       crt_print("G013_test: test 1 FAIL\n\r");
     }
+		#endif
     ret_val = release_processor();
   }
 }
@@ -128,11 +128,13 @@ void proc2(void)
       pass++;
     }
     if (pass == 2) {
-      if (!KEYBOARD_ENABLED)
+      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 2 OK\n\r");
+			#endif
     } else {
-      if (!KEYBOARD_ENABLED)
+      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 2 FAIL\n\r");
+			#endif
     }
     ret_val = release_processor();
   }
@@ -149,12 +151,15 @@ void proc3(void)
     pass++;
   }
   if (pass == 1) {
-      if (!KEYBOARD_ENABLED)
+      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 3 OK\n\r");
+			#endif
     } else {
-      if (!KEYBOARD_ENABLED)
+      #ifndef KEYBOARD_ENABLED
       crt_print("G013_test: test 3 FAIL\n\r");
+			#endif
     }
+		release_memory_block((void *)msg);
   
   ret_val = release_processor();
  }

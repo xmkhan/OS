@@ -52,19 +52,41 @@ void crt_init(void) {
 
 void crt_print(char* input) {
   PCB* saved_process = current_process;
-  MSG* msg = (MSG*) request_memory_block();
+	MSG* msg = (void *)0;
+	if (__get_CONTROL() == 0) {
+		msg = (MSG*) request_memory_block();
+	}
+	else {
+		msg = (MSG*) k_request_memory_block();
+	}
+	
   msg->msg_data = (void*) input;
   msg->msg_type = 1;
   
-  send_message(CRT_PID, msg);
+	if (__get_CONTROL() == 0) {
+		send_message(CRT_PID, msg);
+	}
+	else {
+		k_send_message(CRT_PID, msg);
+	}
   
   if(!(saved_process->pid == 0 && saved_process->state == NEW))
-    context_switch(crt_pcb);
+  if (__get_CONTROL() == 0) {  
+		context_switch(crt_pcb);
+	}
+	else {
+		k_context_switch(crt_pcb);
+	}
   
   crt_i_process();
   
   if(!(saved_process->pid == 0 && saved_process->state == NEW))
-    context_switch(saved_process);  
+  if (__get_CONTROL() == 0) {  
+		context_switch(saved_process);
+	}
+	else {
+		k_context_switch(saved_process);
+	}
 }
 
 /**

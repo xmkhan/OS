@@ -14,6 +14,8 @@ PCB* keyboard_pcb;
 Process wall_clock_process;
 PCB *wall_clock_pcb;
 
+static PCB *saved_process = (void *)0;
+	
 void wall_clock_init(void) {
   uint32_t *sp = (void *)0;
   int j = 0;
@@ -122,7 +124,6 @@ void keyboard_proc(char *input)
 {
 	volatile char command[2];
 	volatile int i = 0;
-	PCB *saved_process = (void *)0;
 	
 	volatile char *b = input;
 	

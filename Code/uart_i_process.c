@@ -181,6 +181,9 @@ void c_UART0_IRQHandler(void)
 		input_char = pUart->RBR;
 		input_display[0] = input_char;
 		input_display[1] = '\0';
+		
+		if (input_char == 96) {
+		} else {
 		g_UART0_buffer[g_UART0_count++] = input_char;
 		
 		if (input_char == 13) {
@@ -230,6 +233,7 @@ void c_UART0_IRQHandler(void)
 				//keyboard_proc((char *)g_UART0_buffer);
 				g_UART0_count = 0;  /* buffer overflow */
 			}
+		}
 			
 	} else if (IIR_IntId & IIR_THRE) { 
 		/* THRE Interrupt, transmit holding register empty*/
