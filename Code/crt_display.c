@@ -6,7 +6,7 @@
 #include "memory.h"
 #include "pq.h"
 
-#define NUM_STATES  5
+#define NUM_STATES  6
 #define COL_SIZE    10 
 #define BUFFER_SIZE 10
 
@@ -26,6 +26,7 @@ void crt_init(void) {
   crt_pcb->priority = 99;
   crt_pcb->type = INTERRUPT;
   crt_pcb->state = NEW;
+  crt_pcb->status = NONE;
   crt_pcb->head = (void *) 0;
   crt_pcb->next = (void *) 0;
   crt_process.pcb = crt_pcb;
@@ -133,9 +134,10 @@ void hot_key_handler(void) {
   p_states[j++] = "New";
   p_states[j++] = "Ready";
   p_states[j++] = "Running";
-  p_states[j++] = "Blocked";
+  p_states[j++] = "Message BLKD";
   p_states[j++] = "Exit"; 
-
+  p_states[j++] = "Memory BLKD";
+  
   //the categories we would be outputing
   crt_print((void*)header);
   
@@ -163,7 +165,17 @@ void hot_key_handler(void) {
     
     //output the state
     crt_print((void*)buffer);
-    crt_print((void*) p_states[iterate->state]);
+    if(iterate->state == BLKD) {
+      if(iterate->status == MEM_BLKD) {
+        crt_print((void*) p_states[iterate->state]);
+      }
+      else if(iterate->status == MSG_BLKD) {
+        crt_print((void*) p_states[5]);
+      }
+    }
+    else {
+      crt_print((void*) p_states[iterate->state]);
+    }
     
     //Print a new line at the end
     buffer[0] = '\n';

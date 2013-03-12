@@ -107,6 +107,7 @@ uint32_t timer_init(uint8_t n_timer)
   timer_pcb->priority = 99;
   timer_pcb->type = INTERRUPT;
   timer_pcb->state = NEW;
+  timer_pcb->status = NONE;
   timer_pcb->head = (void *) 0;
   timer_pcb->next = (void *) 0;
   timer_process.pcb = timer_pcb;

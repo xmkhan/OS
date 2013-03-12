@@ -36,6 +36,7 @@ void __initialize_processes(void) {
     pcb_list[i]->priority = priority_t[i];
     pcb_list[i]->type = USER;
     pcb_list[i]->state = NEW;
+    pcb_list[i]->status = NONE;
     pcb_list[i]->head = (void *)0;
     process_list[i].pcb = (PCB *)pcb_list[i];
     process_list[i].start_loc = (uint32_t)process_t[i];
@@ -67,6 +68,7 @@ void null_process(void) {
   }
 }
 
+int delay = 10000;
 // process 1: Testing for message sending
 void proc1(void)
 {
@@ -78,7 +80,7 @@ void proc1(void)
     int x1 = 10, x2 = 20, x3 = 30;
     volatile MSG *msg = (volatile MSG *) request_memory_block();
     volatile MSG *msg2 = (volatile MSG *) request_memory_block();
-    volatile MSG *msg3 = (volatile MSG *) request_memory_block();
+    volatile MSG *msg3 = (void *)0;
     
     msg->msg_data = (void *) &x1;
     msg->msg_type = 1;
@@ -88,10 +90,13 @@ void proc1(void)
     msg2->msg_type = 1;
     send_status = send_status  | send_message(2, (MSG *)msg2);
     
-    msg3->msg_data = (void *) &x3;
-    msg3->msg_type = 1;
-    send_status = send_status | delayed_send(3, (MSG *) msg3, 10);
-    
+    if (delay > 0) {
+      msg3 = (volatile MSG *) request_memory_block();
+      msg3->msg_data = (void *) &x3;
+      msg3->msg_type = 1;
+      send_status = send_status | delayed_send(3, (MSG *) msg3, delay);
+      delay /=10;
+    }
     if (send_status == 0) {
       if (!KEYBOARD_ENABLED)
       crt_print("G013_test: test 1 OK\n\r");

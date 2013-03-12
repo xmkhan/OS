@@ -69,6 +69,7 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
     // Handle unblocking of destination process.
     remove_pq((PCB **)msg_pq, dest_proc);
     dest_proc->state = RDY; // Must be ready to be added to the RDY_Q
+    dest_proc->status = NONE;
     insert_process_pq(dest_proc);
   }
 
@@ -109,6 +110,7 @@ void *k_receive_message(int *sender_ID) {
     if (dest_proc == (void *)0) { // PCB has not been added to the blocking msg_pq
       remove_process_pq(current_process);
       current_process->state = BLKD; // Set state to BLKD
+      current_process->status = MSG_BLKD; // Set status to MSG_BLKD
       enqueue_q(&msg_pq, current_process, PCB_T);
     }
     __enable_irq();

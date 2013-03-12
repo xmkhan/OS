@@ -138,6 +138,11 @@ int enqueue_q(void* pq_generic, void* p_generic, q_type type) {
       *pq = p;
       return 0;
     }
+    if (p->expiry_time < head->expiry_time) {
+      p->next = head;
+      head = p;
+      return 0;
+    }
     while (head->next != NULL && head->next->expiry_time < p->expiry_time) { // Traverse to the end
       head = head->next;
     }

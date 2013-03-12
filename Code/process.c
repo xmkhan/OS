@@ -137,6 +137,7 @@ int k_context_switch(PCB* process) {
      }
      remove_process_pq((PCB*)current_process);
 		 current_process->state = RUN;
+     current_process->status = NONE;
      
      if(current_process->type != INTERRUPT)
      {
@@ -154,6 +155,7 @@ int k_context_switch(PCB* process) {
      }
      remove_process_pq((PCB*)current_process);
 		 current_process->state = RUN;
+     current_process->status = NONE;
      
      if(current_process->type != INTERRUPT)
         __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */

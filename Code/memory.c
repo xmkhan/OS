@@ -53,6 +53,7 @@ void* k_request_memory_block(void) {
   if (NUM_MEMORY_BLOCKS == 0) {
     //block the process on memory_req
     current_process->state = BLKD;
+    current_process->status = MEM_BLKD;
     insert_pq((PCB**) mem_pq, (PCB*)current_process);
     k_release_processor();
   }
@@ -93,6 +94,7 @@ int k_release_memory_block(void* p_mem_blk) {
       blkProcess = get_process((PCB**) mem_pq);
       if(blkProcess != NULL) {
         blkProcess->state = RDY;
+        blkProcess->status = NONE;
         remove_pq((PCB**) mem_pq, blkProcess);
         insert_process_pq(blkProcess);
       }
