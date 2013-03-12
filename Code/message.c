@@ -111,10 +111,12 @@ void *k_receive_message(int *sender_ID) {
       remove_process_pq(current_process);
       current_process->state = BLKD; // Set state to BLKD
       current_process->status = MSG_BLKD; // Set status to MSG_BLKD
-      enqueue_q(&msg_pq, current_process, PCB_T);
+      insert_pq((PCB**)msg_pq, current_process);
     }
     __enable_irq();
+    semSignal(&receive);
     k_release_processor(); // Release this process as it is blocked
+    semWait(&receive);
     __disable_irq();
   }
   msg = dequeue_q(&(current_process->head), MSG_T); // We have acquired a 'msg'
