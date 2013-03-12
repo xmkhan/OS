@@ -197,18 +197,6 @@ void c_UART0_IRQHandler(void)
 		if (input_char == 13) {
 			g_UART0_buffer[--g_UART0_count] = '\0';
 			g_UART0_count = 0;
-			saved_process = current_process;
-  
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(keyboard_pcb);
-  
-			// call i process
-			keyboard_proc((char *)g_UART0_buffer);
-  
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(saved_process);
 			
 			input_display[0] = '\n';
 			input_display[1] = '\0';
@@ -223,6 +211,19 @@ void c_UART0_IRQHandler(void)
 			key_msg->msg_data = input_display;
 			k_send_message(CRT_PID, key_msg);
 			k_crt_i_process();
+			
+			saved_process = current_process;
+  
+			// check if at start the timer started before processes started being schedule, if so no context switch
+			if(!(saved_process->pid == 0 && saved_process->state == NEW))
+				k_context_switch(keyboard_pcb);
+  
+			// call i process
+			keyboard_proc((char *)g_UART0_buffer);
+  
+			// check if at start the timer started before processes started being schedule, if so no context switch
+			if(!(saved_process->pid == 0 && saved_process->state == NEW))
+				k_context_switch(saved_process);
 			
 			//g_UART0_TX_empty = 1;
 			//input_display[0] = '\r';
