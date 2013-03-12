@@ -120,6 +120,13 @@ void crt_i_process(void) {
   
   //non-blocking output
   uart_i_process( 0, (uint8_t* ) msg->msg_data, length );
+	
+	if (__get_CONTROL() == 0) {
+		release_memory_block((void *)msg);
+	}
+	else {
+		k_release_memory_block((void *)msg);
+	}
 }
 
 /*

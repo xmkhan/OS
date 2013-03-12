@@ -184,7 +184,7 @@ void wall_clock(void)
 		counter = get_current_time();
 		if (counter - WALL_CLOCK_START_TIMER >= 1000) {
 			ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
-			// <insert output>
+			crt_print(CURR_TIME_BUFFER);
 			counter = 0;
 		}
 	}
