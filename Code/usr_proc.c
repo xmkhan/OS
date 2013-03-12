@@ -6,7 +6,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
-//#define KEYBOARD_ENABLED
+#define KEYBOARD_ENABLED
 
 // Tri-state variable -1 = fail, 0 = not tested, 1 = pass
 volatile int TEST1 = 0;

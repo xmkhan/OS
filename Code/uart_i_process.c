@@ -222,11 +222,11 @@ void c_UART0_IRQHandler(void)
 				k_context_switch(keyboard_pcb);
   
 			// call i process
-			keyboard_proc((char *)g_UART0_buffer);
+			keyboard_proc((char *)g_UART0_buffer, saved_process);
   
 			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(saved_process);
+			//if(!(saved_process->pid == 0 && saved_process->state == NEW))
+			//	k_context_switch(saved_process);
 			
 			//g_UART0_TX_empty = 1;
 			//input_display[0] = '\r';

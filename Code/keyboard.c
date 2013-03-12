@@ -14,7 +14,7 @@ PCB* keyboard_pcb;
 Process wall_clock_process;
 PCB *wall_clock_pcb;
 
-static PCB *saved_process = (void *)0;
+//static PCB *saved_process = (void *)0;
 	
 void wall_clock_init(void) {
   uint32_t *sp = (void *)0;
@@ -119,11 +119,11 @@ void ts_to_hms(int ts, char *buffer)
 	buffer[9] = '\0';
 }
 
-void keyboard_proc(char *input)
+void keyboard_proc(char *input, PCB *saved_process)
 {
 	volatile char command[2];
 	volatile int i = 0;
-	
+	MSG* msg = (void*) 0;
 	volatile char *b = input;
 	
   if (!b) {
@@ -154,7 +154,9 @@ void keyboard_proc(char *input)
 			ts_to_hms(0, CURR_TIME_BUFFER);
 			WALL_CLOCK_RUNNING = 1;
 			
-			saved_process = current_process;
+			msg =(MSG*) k_request_memory_block();
+			msg->msg_data = saved_process;
+			k_send_message(WALL_CLOCK_PID, msg);
 			
 			__enable_irq();
 			
@@ -169,8 +171,10 @@ void keyboard_proc(char *input)
 			WALL_CLOCK_START_TIMER = get_current_time();
 			ts_to_hms(hms_to_ts((char *)b), CURR_TIME_BUFFER);
 			WALL_CLOCK_RUNNING = 1;
-
-			saved_process = current_process;
+			
+			msg =(MSG*) k_request_memory_block();
+			msg->msg_data = saved_process;
+			k_send_message(WALL_CLOCK_PID, msg);
 			
 			__enable_irq();
 			
@@ -181,8 +185,10 @@ void keyboard_proc(char *input)
 			__disable_irq();
 		}
 		else if (command[1] == 'T') {
+	
 			// wall clock terminate
 			WALL_CLOCK_RUNNING = 0;
+			
 			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
 				k_context_switch(saved_process);
@@ -192,14 +198,22 @@ void keyboard_proc(char *input)
 
 void wall_clock(void)
 {
-	int counter = WALL_CLOCK_START_TIMER;
-	int comparison = WALL_CLOCK_START_TIMER;
-	while (WALL_CLOCK_RUNNING) {
-		counter = get_current_time();
-		if (counter - comparison >= 1000) {
-			ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
-			crt_print(CURR_TIME_BUFFER);
-			comparison = counter;
-		}
+	while(1)
+	{
+		int sender_id;
+		MSG* msg;
+		int counter = WALL_CLOCK_START_TIMER;
+		int comparison = WALL_CLOCK_START_TIMER;
+		while (WALL_CLOCK_RUNNING) {
+			counter = get_current_time();
+			if (counter - comparison >= 1000) {
+				ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
+				crt_print(CURR_TIME_BUFFER);
+				comparison = counter;
+			}
+		}	
+		
+		msg = get_message(wall_clock_pcb);
+	  context_switch(msg->msg_data);		
 	}
 }
