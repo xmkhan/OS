@@ -6,7 +6,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
-//#define KEYBOARD_ENABLED
+#define KEYBOARD_ENABLED
 
 // test state variables
 int NUM_TESTS_PASSED = 0;

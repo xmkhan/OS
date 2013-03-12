@@ -15,6 +15,7 @@
 volatile uint8_t g_UART0_TX_empty=1;
 volatile uint8_t g_UART0_buffer[BUFSIZE];
 volatile uint32_t g_UART0_count = 0;
+PCB *saved_process;
 
 /**
  * @brief: initialize the n_uart
@@ -183,6 +184,13 @@ void c_UART0_IRQHandler(void)
 		input_display[1] = '\0';
 		
 		if (input_char == 96) {
+			saved_process = current_process;
+			
+			key_msg->msg_data = (void *)saved_process;
+			k_send_message(HOTKEY_PID, key_msg);
+			k_context_switch(hotkey_pcb);
+			
+			
 		} else {
 		g_UART0_buffer[g_UART0_count++] = input_char;
 		
