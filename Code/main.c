@@ -19,6 +19,7 @@ void __init()
    message_init();
 	 keyboard_init();
    crt_init();
+	 hotkey_init();
    timer_init(0);
 	 wall_clock_init();
 }
@@ -26,7 +27,7 @@ void __init()
 int main() {
   volatile unsigned int ret_val = 1234;
 
-  // performe initalization
+  // perform initalization
 	SystemInit();
   __disable_irq();
  	i_uart_init(0);

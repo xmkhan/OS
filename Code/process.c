@@ -58,6 +58,8 @@ PCB *lookup_pid(int pid) {
 			return timer_pcb;
 		case CRT_PID:
 			return crt_pcb;
+		case HOTKEY_PID:
+			return hotkey_pcb;
 	}
 	return (void *)0;
 }

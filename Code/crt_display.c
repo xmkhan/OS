@@ -13,6 +13,44 @@
 static char buffer[BUFFER_SIZE];
 Process crt_process;
 PCB* crt_pcb;
+Process hotkey_process;
+PCB* hotkey_pcb;
+
+void hotkey_init(void) {
+  uint32_t *sp = (void *)0;
+  int j = 0;
+  
+  // initialize hotkey display process
+  hotkey_pcb = k_request_memory_block();
+  hotkey_process.stack = k_request_memory_block();
+  
+  hotkey_pcb->pid = HOTKEY_PID;
+  hotkey_pcb->priority = 99;
+  hotkey_pcb->type = USER;
+  hotkey_pcb->state = NEW;
+  hotkey_pcb->status = NONE;
+  hotkey_pcb->head = (void *) 0;
+  hotkey_pcb->next = (void *) 0;
+  hotkey_process.pcb = hotkey_pcb;
+  hotkey_process.start_loc = (uint32_t)hot_key_handler;
+  
+  sp = (uint32_t *)((uint32_t)hotkey_process.stack + MEMORY_BLOCK_SIZE);
+    
+  /* 8 bytes alignement adjustment to exception stack frame */
+  if (!(((uint32_t)sp) & 0x04)) {
+      --sp;
+  }
+    
+  *(--sp)  = 0x01000000;              /* user process initial xPSR */ 
+  *(--sp)  = hotkey_process.start_loc ;  /* PC contains the entry point of the process */
+
+  for (j=0; j < 6; j++) {             /* R0-R3, R12 are cleared with 0 */
+    *(--sp) = 0x0;
+  }  
+  hotkey_process.pcb->mp_sp = (uint32_t *)sp;
+  
+  insert_process_pq(hotkey_process.pcb);
+}
 
 void crt_init(void) {
   uint32_t *sp = (void *)0;
@@ -156,9 +194,13 @@ void crt_i_process(void) {
  * handle hot-key key press 
  */
 void hot_key_handler(void) {
+	while (1) {
+	MSG *msg = (void *)0;
+	int sender_id = 0;
   char* header = "\n\rProc_id  Priority Status\n\r";
   int i = 0, j=0, n = 0, col_empty = 0;
   PCB *iterate;  
+	PCB *saved_process;
   
   //States' char* representation
   char* p_states[NUM_STATES];
@@ -214,5 +256,10 @@ void hot_key_handler(void) {
     buffer[2] = '\0';
     crt_print((void*) buffer);
   }
+	msg = (MSG *)receive_message(&sender_id);
+	saved_process = (PCB *)msg->msg_data;
+	release_memory_block(msg);
+	context_switch(saved_process);
+	}
 }
 
