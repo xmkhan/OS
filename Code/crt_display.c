@@ -88,6 +88,49 @@ void crt_init(void) {
   insert_process_pq(crt_process.pcb);
 }
 
+#define def_crt_print(kprefix) void kprefix##crt_print(char *input) {\
+  PCB* saved_process = current_process;\
+	MSG* msg = (void *)0;\
+	msg = (MSG*)kprefix##request_memory_block();\
+  msg->msg_data = (void*) input;\
+  msg->msg_type = 1;\
+  kprefix##send_message(CRT_PID, msg);\
+  if(!(saved_process->pid == 0 && saved_process->state == NEW)) \
+    kprefix##context_switch(crt_pcb);\
+  kprefix##crt_i_process();\
+  if(!(saved_process->pid == 0 && saved_process->state == NEW)) \
+    kprefix##context_switch(saved_process);\
+}
+
+#define def_crt_i_process(kprefix) void kprefix##crt_i_process(void) {\
+  volatile int length = 0;\
+  char* b = (void*) 0;\
+  MSG *msg = (void*) 0;\
+  msg = (MSG*) kprefix##get_message(crt_pcb);\
+  if(msg == (void*) 0) return;\
+  b = msg->msg_data;\
+  if(!b) return;\
+  \
+  /*Find the length of the message*/\
+  while(*b != '\0') {\
+    b++;\
+    length++;\
+  }\
+  \
+  if(length == 0) return;\
+  \
+  /*non-blocking output*/\
+  uart_i_process( 0, (uint8_t* ) msg->msg_data, length );\
+	kprefix##release_memory_block((void *)msg);\
+}
+
+
+def_crt_print();
+def_crt_print(k_);
+def_crt_i_process();
+def_crt_i_process(k_);
+
+/*
 void crt_print(char* input) {
   PCB* saved_process = current_process;
 	MSG* msg = (void *)0;
@@ -116,7 +159,7 @@ void crt_print(char* input) {
 		k_context_switch(crt_pcb);
 	}
   
-  crt_i_process();
+  //crt_i_process();
   
   if(!(saved_process->pid == 0 && saved_process->state == NEW))
   if (__get_CONTROL() == BIT(0)) {  
@@ -126,6 +169,7 @@ void crt_print(char* input) {
 		k_context_switch(saved_process);
 	}
 }
+*/
 
 /**
  * Convert a positive integer or 0 to char*
@@ -156,15 +200,12 @@ void crt_output_int(int input) {
   crt_print(buffer);
 }
 
-void crt_i_process(void) {	
+/*void crt_i_process(void) {	
   volatile int length = 0;
   char* b = (void*) 0;
   MSG *msg = (void*) 0;
-
-	if (__get_CONTROL() == BIT(0)) 
-		msg = (MSG*) get_message(crt_pcb);
-	else 
-		msg = (MSG*) k_get_message(crt_pcb);
+  
+  msg = (MSG*) k_get_message(crt_pcb);
 	
   if(msg == (void*) 0) return;
   
@@ -181,14 +222,8 @@ void crt_i_process(void) {
   
   //non-blocking output
   uart_i_process( 0, (uint8_t* ) msg->msg_data, length );
-	
-	if (__get_CONTROL() == BIT(0)) {
-		release_memory_block((void *)msg);
-	}
-	else {
-		k_release_memory_block((void *)msg);
-	}
-}
+	k_release_memory_block((void *)msg);
+}*/
 
 /*
  * handle hot-key key press 

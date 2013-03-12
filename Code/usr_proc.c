@@ -6,7 +6,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
-#define KEYBOARD_ENABLED
+//#define KEYBOARD_ENABLED
 
 // test state variables
 int NUM_TESTS_PASSED = 0;
@@ -199,6 +199,7 @@ void proc4(void)
 // process 5: test registers/general variable allocation
 void proc5(void)
 {
+ while (1) {
   volatile int ret_val = 10;
   #ifndef KEYBOARD_ENABLED
   int a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7, h = 8, i = 9, j = 10,
@@ -207,7 +208,6 @@ void proc5(void)
   a +=1; b += 1; c +=1; d +=1; e +=1; f +=1;g+=1;h+=1;i+=1;j+=1;k+=1;l+=1;m+=1;n+=1;o+=1;
   p+=1;q+=1;r+=1;s+=1;t+=1;u+=1;v+=1;w+=1;x+=1;y+=1;z+=1; 
   
-  while (1) {
   crt_print("G013_test: test 5 OK\n\r");
   #endif
   ret_val = release_processor();
