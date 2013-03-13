@@ -175,9 +175,8 @@ void c_UART0_IRQHandler(void)
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	int iState = k_get_interrupt_state();
-	k_set_interrupt_state(4);
 	int key_pressed = 0;
-	
+	k_set_interrupt_state(4);
 	
 	/* Reading IIR automatically acknowledges the interrupt */
 	IIR_IntId = (pUart->IIR) >> 1 ; /* skip pending bit in IIR */

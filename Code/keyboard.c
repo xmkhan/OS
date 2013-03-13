@@ -205,8 +205,7 @@ void wall_clock(void)
 {
 	while(1)
 	{
-		int sender_id;
-		MSG* msg;
+		MSG* msg = (void *)0;
 		int counter = WALL_CLOCK_START_TIMER;
 		int comparison = WALL_CLOCK_START_TIMER;
 		while (WALL_CLOCK_RUNNING) {
