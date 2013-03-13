@@ -5,6 +5,7 @@
 #include "pq.h"
 #include "timer.h"
 #include "crt_display.h"
+#include "uart_i_process.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -13,6 +14,8 @@
 #ifndef NULL
 #define NULL (void *)0
 #endif
+
+volatile int state = 7;
 
 volatile static PCB *p_pq[NUM_PRIORITIES]; // PCB PQ
 PCB *current_process;
@@ -117,10 +120,13 @@ int k_release_processor(void) {
 int k_context_switch(PCB* process) {
    PCB *old_process = current_process;
    volatile STATE state;
+   int iState = k_get_interrupt_state();
+   k_set_interrupt_state(0);
   
    current_process = process;
 
 	 if (current_process == NULL) {
+     k_set_interrupt_state(iState);
 	   return -1;
 	 }
 	 state = current_process->state;
@@ -142,6 +148,7 @@ int k_context_switch(PCB* process) {
      if(current_process->type != INTERRUPT)
      {
         __set_MSP((uint32_t) current_process->mp_sp);
+        k_set_interrupt_state(iState);
         __rte();  /* pop exception stack frame from the stack for a new process */
      }
 	 } else if (state == RDY || state == INTERRUPTED) {
@@ -161,7 +168,56 @@ int k_context_switch(PCB* process) {
         __set_MSP((uint32_t) current_process->mp_sp); /* switch to the new proc's stack */
 	 } else {
 	     current_process = old_process; /* revert back to the old proc on error */
+       k_set_interrupt_state(iState);
 	     return -1;
 	 }
+  k_set_interrupt_state(iState);
 	return 0;
+}
+
+int k_get_interrupt_state()
+{
+  return state;
+}
+
+void k_set_interrupt_state(int newState)
+{
+  LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
+  
+  unsigned int timer = newState&1;
+  unsigned int kb = newState&2;
+  unsigned int crt = newState&4;
+ 
+  
+  switch(timer)
+  {
+    case 1:
+      NVIC_EnableIRQ(TIMER0_IRQn);
+      break;
+    case 0:
+      NVIC_DisableIRQ(TIMER0_IRQn);
+      break;      
+  }
+  
+  switch(kb) {
+    case 2:
+      pUart->IER = pUart->IER | IER_RBR | IER_RLS |  IER_THRE;  
+      NVIC_EnableIRQ(UART0_IRQn);
+      break;
+    case 0:
+      pUart->IER = pUart->IER & !(IER_RBR | IER_RLS | IER_THRE);  
+      break;
+  }
+  
+  switch(crt) {
+    case 4:
+      pUart->IER = pUart->IER | IER_RBR | IER_RLS |  IER_THRE;  
+      NVIC_EnableIRQ(UART0_IRQn);
+      break;
+    case 0:
+      pUart->IER = pUart->IER & !(IER_RBR | IER_RLS | IER_THRE);
+      break;
+  }
+  
+  state = newState;
 }

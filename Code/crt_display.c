@@ -91,6 +91,8 @@ void crt_init(void) {
 #define def_crt_print(kprefix) void kprefix##crt_print(char *input) {\
   PCB* saved_process = current_process;\
 	MSG* msg = (void *)0;\
+  int iState = kprefix##get_interrupt_state();\
+  kprefix##set_interrupt_state(4);\
 	msg = (MSG*)kprefix##request_memory_block();\
   msg->msg_data = (void*) input;\
   msg->msg_type = 1;\
@@ -100,6 +102,7 @@ void crt_init(void) {
   kprefix##crt_i_process();\
   if(!(saved_process->pid == 0 && saved_process->state == NEW)) \
     kprefix##context_switch(saved_process);\
+  kprefix##set_interrupt_state(iState);\
 }
 
 #define def_crt_i_process(kprefix) void kprefix##crt_i_process(void) {\

@@ -174,8 +174,8 @@ void c_UART0_IRQHandler(void)
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
-	
-	__disable_irq();
+	int iState = k_get_interrupt_state();
+  k_set_interrupt_state(4);
 	
 	/* Reading IIR automatically acknowledges the interrupt */
 	IIR_IntId = (pUart->IIR) >> 1 ; /* skip pending bit in IIR */
@@ -192,8 +192,6 @@ void c_UART0_IRQHandler(void)
 			key_msg->msg_data = (void *)saved_process;
 			k_send_message(HOTKEY_PID, key_msg);
 			k_context_switch(hotkey_pcb);
-			
-			
 		} else {
 		g_UART0_buffer[g_UART0_count++] = input_char;
 		
@@ -265,7 +263,7 @@ void c_UART0_IRQHandler(void)
 			   Dummy read on RX to clear interrupt, then bail out
 			*/
 			dummy = pUart->RBR; 
-			__enable_irq();
+      k_set_interrupt_state(iState);
 			return; /* error occurs, return */
 		}
 		/* If no error on RLS, normal ready, save into the data buffer.
@@ -280,10 +278,10 @@ void c_UART0_IRQHandler(void)
 			}	
 		}	    
 	} else { /* IIR_CTI and reserved combination are not implemented */
-		__enable_irq();
+    k_set_interrupt_state(iState);
 		return;
 	}
-	__enable_irq();
+  k_set_interrupt_state(iState);
 }
 
 void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
