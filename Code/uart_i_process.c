@@ -174,6 +174,7 @@ void c_UART0_IRQHandler(void)
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
+	int key_pressed = 0;
 	
 	__disable_irq();
 	
@@ -187,12 +188,14 @@ void c_UART0_IRQHandler(void)
 		input_display[1] = '\0';
 		
 		if (input_char == 96) {
-			saved_process = current_process;
+			if (!key_pressed) {
+				saved_process = current_process;
 			
-			key_msg->msg_data = (void *)saved_process;
-			k_send_message(HOTKEY_PID, key_msg);
-			k_context_switch(hotkey_pcb);
-			
+				key_msg->msg_data = (void *)saved_process;
+				k_send_message(HOTKEY_PID, key_msg);
+				k_context_switch(hotkey_pcb);
+			}
+			key_pressed = !key_pressed;
 			
 		} else {
 		g_UART0_buffer[g_UART0_count++] = input_char;
@@ -296,6 +299,7 @@ void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
 		return;
 	}
 
+	pUart->IER = IER_THRE; 
 	while ( len != 0 ) {
 		/* THRE status, contain valid data  */
 		while ( !(g_UART0_TX_empty & 0x01) );	
@@ -304,6 +308,7 @@ void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
 		p_buffer++;
 		len--;
 	}
+	pUart->IER = IER_RBR | IER_THRE | IER_RLS; 
 	return;
 }
 
