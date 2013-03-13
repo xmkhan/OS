@@ -175,7 +175,9 @@ void c_UART0_IRQHandler(void)
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
 	int iState = k_get_interrupt_state();
-  k_set_interrupt_state(4);
+	k_set_interrupt_state(4);
+	int key_pressed = 0;
+	
 	
 	/* Reading IIR automatically acknowledges the interrupt */
 	IIR_IntId = (pUart->IIR) >> 1 ; /* skip pending bit in IIR */
@@ -187,11 +189,16 @@ void c_UART0_IRQHandler(void)
 		input_display[1] = '\0';
 		
 		if (input_char == 96) {
-			saved_process = current_process;
+
+			if (!key_pressed) {
+				saved_process = current_process;
 			
-			key_msg->msg_data = (void *)saved_process;
-			k_send_message(HOTKEY_PID, key_msg);
-			k_context_switch(hotkey_pcb);
+				key_msg->msg_data = (void *)saved_process;
+				k_send_message(HOTKEY_PID, key_msg);
+				k_context_switch(hotkey_pcb);
+			}
+			key_pressed = !key_pressed;
+			
 		} else {
 		g_UART0_buffer[g_UART0_count++] = input_char;
 		
@@ -220,11 +227,11 @@ void c_UART0_IRQHandler(void)
 				k_context_switch(keyboard_pcb);
   
 			// call i process
-			keyboard_proc((char *)g_UART0_buffer);
+			keyboard_proc((char *)g_UART0_buffer, saved_process);
   
 			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(saved_process);
+			//if(!(saved_process->pid == 0 && saved_process->state == NEW))
+			//	k_context_switch(saved_process);
 			
 			//g_UART0_TX_empty = 1;
 			//input_display[0] = '\r';
@@ -294,6 +301,7 @@ void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
 		return;
 	}
 
+	pUart->IER = IER_THRE; 
 	while ( len != 0 ) {
 		/* THRE status, contain valid data  */
 		while ( !(g_UART0_TX_empty & 0x01) );	
@@ -302,6 +310,7 @@ void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
 		p_buffer++;
 		len--;
 	}
+	pUart->IER = IER_RBR | IER_THRE | IER_RLS; 
 	return;
 }
 

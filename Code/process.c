@@ -4,6 +4,7 @@
 #include "usr_proc.h"
 #include "pq.h"
 #include "timer.h"
+#include "keyboard.h"
 #include "crt_display.h"
 #include "uart_i_process.h"
 
@@ -61,6 +62,8 @@ PCB *lookup_pid(int pid) {
 			return timer_pcb;
 		case CRT_PID:
 			return crt_pcb;
+		case WALL_CLOCK_PID:
+			return wall_clock_pcb;
 		case HOTKEY_PID:
 			return hotkey_pcb;
 	}
