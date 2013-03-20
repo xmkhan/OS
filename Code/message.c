@@ -2,6 +2,7 @@
 #include "message.h"
 #include "semaphore.h"
 #include "timer.h"
+#include "crt_display.h"
 
 semaphore send;
 semaphore receive;
@@ -87,7 +88,7 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   k_set_interrupt_state(iState);
   semSignal(&send);
 
-  if (dest_proc->priority < current_process->priority && delay == 0 && current_process->pid != TIMER_PID) {
+  if (dest_proc->priority < current_process->priority && delay == 0 && current_process->pid != TIMER_PID && dest_proc->pid != CRT_PID) {
     k_release_processor(); // Destination process has a higher priority, release processor
   }
 

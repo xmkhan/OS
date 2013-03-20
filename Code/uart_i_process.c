@@ -174,7 +174,7 @@ void c_UART0_IRQHandler(void)
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
-	int iState = k_get_interrupt_state();
+	volatile int iState = k_get_interrupt_state();
 	int key_pressed = 0;
 	k_set_interrupt_state(4);
 	
@@ -209,7 +209,7 @@ void c_UART0_IRQHandler(void)
 			input_display[1] = '\0';
 			key_msg->msg_data = input_display;
 			k_send_message(CRT_PID, key_msg);
-			k_crt_i_process();
+//			k_crt_i_process();
 			
 			g_UART0_TX_empty = 1;
 			
@@ -217,7 +217,7 @@ void c_UART0_IRQHandler(void)
 			input_display[1] = '\0';
 			key_msg->msg_data = input_display;
 			k_send_message(CRT_PID, key_msg);
-			k_crt_i_process();
+	//		k_crt_i_process();
 			
 			saved_process = current_process;
   
@@ -241,7 +241,7 @@ void c_UART0_IRQHandler(void)
 		else {
 			key_msg->msg_data = input_display;
 			k_send_message(CRT_PID, key_msg);
-			k_crt_i_process();
+		//	k_crt_i_process();
 		}
 		
 			if ( g_UART0_count == BUFSIZE ) {
