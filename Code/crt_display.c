@@ -228,19 +228,19 @@ void hot_key_handler(void) {
 	while (1) {
 	MSG *msg = (void *)0;
 	int sender_id = 0;
-//  char* out = (char*) hotkey_msg->msg_data;
+  char* out = (char*) hotkey_msg->msg_data;
   char* header = "";
   int i = 0, j=0, n = 0, col_empty = 0;
   PCB *iterate;  
 	PCB *saved_process;
   
   //States' char* representation
-//  char* p_states[NUM_STATES];
+  char* p_states[NUM_STATES];
  	msg = (MSG *)receive_message(&sender_id);
 	saved_process = (PCB *)msg->msg_data;
 	context_switch(saved_process);
 
-  /*p_states[j++] = "New";
+  p_states[j++] = "New";
   p_states[j++] = "Ready";
   p_states[j++] = "Running";
   p_states[j++] = "Message BLKD";
@@ -310,7 +310,7 @@ void hot_key_handler(void) {
   send_message(CRT_PID, hotkey_msg);
 	msg = (MSG *)receive_message(&sender_id);
 	saved_process = (PCB *)msg->msg_data;
-	context_switch(saved_process);*/
+	context_switch(saved_process);
 	}
 }
 
