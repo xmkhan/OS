@@ -24,8 +24,8 @@ typedef void (*process_ptr)(void);
 // set up each process (including null) and their stack frames
 void __initialize_processes(void) {
   uint32_t *sp = (void *)0;
-  volatile unsigned int i = 0, j = 0, k = 0;  
-  
+  volatile unsigned int i = 0, j = 0, k = 0;
+
   process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
   int priority_t[] = {4, 1, 1, 1, 1, 1, 1};
 
@@ -44,28 +44,28 @@ void __initialize_processes(void) {
     process_list[i].pcb = (PCB *)pcb_list[i];
     process_list[i].start_loc = (uint32_t)process_t[i];
     process_list[i].pcb->next = (void *)0;
-    
+
     sp = (uint32_t *)((uint32_t)process_list[i].stack + MEMORY_BLOCK_SIZE);
-    
+
     /* 8 bytes alignement adjustment to exception stack frame */
     if (!(((uint32_t)sp) & 0x04)) {
         --sp;
     }
-    
-    *(--sp)  = INITIAL_xPSR;      /* user process initial xPSR */ 
+
+    *(--sp)  = INITIAL_xPSR;      /* user process initial xPSR */
     *(--sp)  = (uint32_t)process_t[i];  /* PC contains the entry point of the process */
 
     for (j=0; j < 6; j++) { /* R0-R3, R12 are cleared with 0 */
       *(--sp) = 0x0;
     }
-    
+
     process_list[i].pcb->mp_sp = (uint32_t *)sp;
   }
 }
 
 // null process: simply release processor
 void null_process(void) {
-  
+
   while(1) {
     volatile int ret_val = release_processor();
   }
@@ -141,7 +141,7 @@ void proc2(void)
     msg = receive_message(&sender_pid);
     msg2_status = 0;
     msg2 = receive_message(&sender_pid);
-    
+
     if (*((int *)msg->msg_data) == 10 && *((int *)msg2->msg_data) == 20) {
       pass++;
       release_status = release_memory_block((void *)msg);
@@ -181,7 +181,7 @@ void proc3(void)
     }
     release_memory_block((void *)msg);
     msg3_status = 0;
-    
+
     if (pass == 1) {
      crt_print("G013_test: test 3 OK\n\r");
      TEST3 = 1;
@@ -242,12 +242,12 @@ void proc5(void)
   k = 11, l = 12, m = 13, n = 14, o = 15, p = 16, q = 17, r = 18, s = 19, t = 20,
   u = 21, v = 22, w = 23, x = 24, y = 25, z = 26;
   a +=1; b += 1; c +=1; d +=1; e +=1; f +=1;g+=1;h+=1;i+=1;j+=1;k+=1;l+=1;m+=1;n+=1;o+=1;
-  p+=1;q+=1;r+=1;s+=1;t+=1;u+=1;v+=1;w+=1;x+=1;y+=1;z+=1; 
+  p+=1;q+=1;r+=1;s+=1;t+=1;u+=1;v+=1;w+=1;x+=1;y+=1;z+=1;
   TEST5 = 0;
   if (a == 2 && b == 3 && c == 4 && d == 5 && e == 6 && f == 7 && g == 8 && h == 9
 				&& i == 10 && j == 11 && k == 12 && l == 13 && m == 14 && n == 15 && o == 16 && p == 17
 				&& q == 18 && r == 19 && s == 20 && t == 21 && u == 22 && v == 23 && w == 24 && x == 25
-				&& y == 26 && z == 27) {  
+				&& y == 26 && z == 27) {
           pass++;
   }
   if (pass == 1) {
@@ -280,7 +280,7 @@ void proc6(void)
     crt_print("G013_test: ");
     crt_output_int(TEST_NUM_PASSED);
     crt_print("/5 tests OK\n\r");
-    
+
     crt_print("G013_test: ");
     crt_output_int(5-TEST_NUM_PASSED);
     crt_print("/5 tests FAIL\n\r");
@@ -294,17 +294,17 @@ void procA(void) {
   volatile MSG *msg           = (void *)0;
   volatile int release_status = 0;
   volatile int send_status    = 10;
-  int sender_pid     = -1;
+  int sender_pid              = -1;
   volatile int ret_val        = 20;
-  int *num                    = 0;
+  int num                     = 0;
   volatile char* msg_body     = (void *)0;
-  
+
   msg = (volatile MSG *) request_memory_block();
   //register with command decoder as handler of %Z commands
   while(1) {
     msg = receive_message(&sender_pid);
     msg_body = (char*)msg->msg_data;
-    if(msg_body[0] == '%' 
+    if(msg_body[0] == '%'
       && msg_body[1] == 'Z') {
         release_status = release_memory_block((void *)msg);
         break;
@@ -313,13 +313,13 @@ void procA(void) {
       release_status = release_memory_block((void *)msg);
     }
   }
-  
+
   while(1) {
     msg_envelope = (volatile MSG *) request_memory_block();
-    msg_envelope->msg_type = 3;
-    msg_envelope->msg_data = num;
+    msg_envelope->msg_type = 3; // count_report
+    msg_envelope->msg_data = &num;
     send_status = send_message(8, (void*)msg_envelope);
-    *num += 1;
+    num += 1;
     ret_val = release_processor();
   }
 }
@@ -342,7 +342,7 @@ void procC(void) {
   volatile int ret_val        = 20;
   int sender_pid              = -1;
   int* msg_int                = (void*) 0;
-  
+
   while(1) {
     if(head == (void*) 0) {
       msg = receive_message(&sender_pid);
@@ -350,17 +350,17 @@ void procC(void) {
     else {
       msg = dequeue_q(&head, MSG_T);
     }
-    if (msg->msg_type == 3) {
+    if (msg->msg_type == 3) { // count_report
       msg_int = (int*) msg->msg_data;
       if(*msg_int % 20 == 0) {
         //send message to crt
-        send_message(11, (void*)msg);
-        
+        send_message(CRT_PID, (void*)msg);
+
         //send delayed messaged
         q = (volatile MSG *) request_memory_block();
         q->msg_type = 4;
-        delayed_send(9, (MSG *) q, 10);
-        
+        delayed_send(9, (MSG *) q, 10 * 1000);
+
         //add messages to queue while waiting for delayed message
         while(1) {
           msg = receive_message(&sender_pid);
