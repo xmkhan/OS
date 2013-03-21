@@ -15,17 +15,26 @@ void message_init(void) {
 }
 
 MSG *get_message_pid(int process_ID) {
-  PCB *pcb = lookup_pid(process_ID);
+  PCB *pcb = 0;
+  int iState = k_get_interrupt_state();
+  k_set_interrupt_state(0);
+  pcb = lookup_pid(process_ID);
   if (pcb != (void *)0 && pcb->head != (void *)0) {
+    k_set_interrupt_state(iState);
     return dequeue_q(&(pcb->head), MSG_T);
   }
+  k_set_interrupt_state(iState);
   return (void *)0;
 }
 
 MSG *k_get_message(PCB *pcb) {
+  int iState = k_get_interrupt_state();
+  k_set_interrupt_state(0);
   if (pcb != (void *)0 && pcb->head != (void *)0) {
+    k_set_interrupt_state(iState);
     return dequeue_q(&(pcb->head), MSG_T);
   }
+  k_set_interrupt_state(iState);
   return (void *)0;
 }
 
@@ -33,11 +42,12 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   MSG *msg = (void *)0;
   PCB *dest_proc = (void *) 0;
   q_type type = MSG_T;
+  int iState = k_get_interrupt_state();
 
   if (MessageEnvelope == (void *) 0) return -1;
 
   semWait(&send);
-  __disable_irq();
+  k_set_interrupt_state(0);
 
   // Create the msg
   msg = (MSG *) MessageEnvelope;
@@ -57,6 +67,7 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   }
 
   if (dest_proc == (void *)0) {
+    k_set_interrupt_state(iState);
     return 1;
   }
   
@@ -73,10 +84,10 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
     insert_process_pq(dest_proc);
   }
 
-  __enable_irq();
+  k_set_interrupt_state(iState);
   semSignal(&send);
 
-  if (dest_proc->priority < current_process->priority && delay == 0) {
+  if (dest_proc->priority < current_process->priority && delay == 0 && current_process->pid != TIMER_PID) {
     k_release_processor(); // Destination process has a higher priority, release processor
   }
 
@@ -100,9 +111,10 @@ int k_delayed_send(int process_ID, void *MessageEnvelope, int delay)
 void *k_receive_message(int *sender_ID) {
   MSG *msg = (void *) 0;
   PCB *dest_proc = (void *)0;
+  int iState = k_get_interrupt_state();
 
   semWait(&receive);
-  __disable_irq();
+  k_set_interrupt_state(0);
 
   while(current_process->head == (void *)0) { // We have yet to receive any msgs
     // Move process from ready_queue to blocking_msg_queue
@@ -112,16 +124,17 @@ void *k_receive_message(int *sender_ID) {
       current_process->status = MSG_BLKD; // Set status to MSG_BLKD
       insert_pq((PCB**)msg_pq, current_process);
     }
-    __enable_irq();
+    k_set_interrupt_state(iState);
     semSignal(&receive);
     k_release_processor(); // Release this process as it is blocked
     semWait(&receive);
-    __disable_irq();
+    iState = k_get_interrupt_state();
+    k_set_interrupt_state(0);
   }
   msg = dequeue_q(&(current_process->head), MSG_T); // We have acquired a 'msg'
   *sender_ID = msg->sender_pid; // Fill in the sender_ID
 
-  __enable_irq();
+  k_set_interrupt_state(iState);
   semSignal(&receive);
 
   return msg;

@@ -2,7 +2,6 @@
 #define PROCESS_H
 
 #include <LPC17xx.h>
-#include "uart_polling.h"
 
 
 #ifndef __SVC_0
@@ -80,5 +79,13 @@ extern int k_get_process_priority(int process_ID);
 extern int _get_process_priority(unsigned int p_func, int process_ID) __SVC_0;
 
 extern void __rte(void);
+
+extern void k_set_interrupt_state(int);
+#define set_interrupt_state(state) _set_interrupt_state((unsigned int)k_set_interrupt_state, state)
+extern void _set_interrupt_state(unsigned int p_func, int state) __SVC_0;
+
+extern int k_get_interrupt_state(void);
+#define get_interrupt_state() _get_interrupt_state((unsigned int)k_get_interrupt_state)
+extern int _get_interrupt_state(unsigned int p_func) __SVC_0;
 
 #endif

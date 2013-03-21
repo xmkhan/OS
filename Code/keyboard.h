@@ -10,12 +10,13 @@ extern int WALL_CLOCK_RUNNING;
 typedef struct PCB PCB;
 
 extern PCB *keyboard_pcb;
+extern PCB *wall_clock_pcb;
 
 void keyboard_init(void);
 void wall_clock_init(void);
 
 // does not handle hotkeys, only normal keyboard input
-void keyboard_proc(char *);
+void keyboard_proc(char *, PCB *);
 
 // process for displaying wall clock
 void wall_clock(void);

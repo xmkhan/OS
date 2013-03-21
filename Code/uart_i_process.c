@@ -16,6 +16,8 @@ volatile uint8_t g_UART0_TX_empty=1;
 volatile uint8_t g_UART0_buffer[BUFSIZE];
 volatile uint32_t g_UART0_count = 0;
 PCB *saved_process;
+MSG *key_msg = (void *)0;
+
 
 /**
  * @brief: initialize the n_uart
@@ -137,7 +139,11 @@ int i_uart_init(int n_uart) {
 
 	/* Step 6b: enable the UART interrupt from the system level */
 	NVIC_EnableIRQ(UART0_IRQn); /* CMSIS function */
-
+  
+  // Allocate memory for keyboard so that when memory runs out keyboard features used for debugging still work
+  key_msg = (MSG*) k_request_memory_block();  
+	key_msg->msg_type = 2;
+  
 	return 0;
 }
 
@@ -167,29 +173,30 @@ void c_UART0_IRQHandler(void)
 	char input_display[3];
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
-	MSG *key_msg = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
-	
-	__disable_irq();
+	int iState = k_get_interrupt_state();
+	int key_pressed = 0;
+	k_set_interrupt_state(4);
 	
 	/* Reading IIR automatically acknowledges the interrupt */
 	IIR_IntId = (pUart->IIR) >> 1 ; /* skip pending bit in IIR */
 
 	if (IIR_IntId & IIR_RDA) { /* Receive Data Avaialbe */
 		/* read UART. Read RBR will clear the interrupt */
-		key_msg = (MSG *)k_request_memory_block();
-		key_msg->msg_type = 1;
 		input_char = pUart->RBR;
 		input_display[0] = input_char;
 		input_display[1] = '\0';
 		
 		if (input_char == 96) {
-			saved_process = current_process;
+
+			if (!key_pressed) {
+				saved_process = current_process;
 			
-			key_msg->msg_data = (void *)saved_process;
-			k_send_message(HOTKEY_PID, key_msg);
-			k_context_switch(hotkey_pcb);
-			
+				key_msg->msg_data = (void *)saved_process;
+				k_send_message(HOTKEY_PID, key_msg);
+				k_context_switch(hotkey_pcb);
+			}
+			key_pressed = !key_pressed;
 			
 		} else {
 		g_UART0_buffer[g_UART0_count++] = input_char;
@@ -197,18 +204,6 @@ void c_UART0_IRQHandler(void)
 		if (input_char == 13) {
 			g_UART0_buffer[--g_UART0_count] = '\0';
 			g_UART0_count = 0;
-			saved_process = current_process;
-  
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(keyboard_pcb);
-  
-			// call i process
-			keyboard_proc((char *)g_UART0_buffer);
-  
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(saved_process);
 			
 			input_display[0] = '\n';
 			input_display[1] = '\0';
@@ -223,6 +218,19 @@ void c_UART0_IRQHandler(void)
 			key_msg->msg_data = input_display;
 			k_send_message(CRT_PID, key_msg);
 			k_crt_i_process();
+			
+			saved_process = current_process;
+  
+			// check if at start the timer started before processes started being schedule, if so no context switch
+			if(!(saved_process->pid == 0 && saved_process->state == NEW))
+				k_context_switch(keyboard_pcb);
+  
+			// call i process
+			keyboard_proc((char *)g_UART0_buffer, saved_process);
+  
+			// check if at start the timer started before processes started being schedule, if so no context switch
+			//if(!(saved_process->pid == 0 && saved_process->state == NEW))
+			//	k_context_switch(saved_process);
 			
 			//g_UART0_TX_empty = 1;
 			//input_display[0] = '\r';
@@ -261,7 +269,7 @@ void c_UART0_IRQHandler(void)
 			   Dummy read on RX to clear interrupt, then bail out
 			*/
 			dummy = pUart->RBR; 
-			__enable_irq();
+      k_set_interrupt_state(iState);
 			return; /* error occurs, return */
 		}
 		/* If no error on RLS, normal ready, save into the data buffer.
@@ -276,10 +284,10 @@ void c_UART0_IRQHandler(void)
 			}	
 		}	    
 	} else { /* IIR_CTI and reserved combination are not implemented */
-		__enable_irq();
+    k_set_interrupt_state(iState);
 		return;
 	}
-	__enable_irq();
+  k_set_interrupt_state(iState);
 }
 
 void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
@@ -292,6 +300,7 @@ void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
 		return;
 	}
 
+	pUart->IER = IER_THRE; 
 	while ( len != 0 ) {
 		/* THRE status, contain valid data  */
 		while ( !(g_UART0_TX_empty & 0x01) );	
@@ -300,6 +309,7 @@ void uart_i_process( uint32_t n_uart, uint8_t *p_buffer, uint32_t len )
 		p_buffer++;
 		len--;
 	}
+	pUart->IER = IER_RBR | IER_THRE | IER_RLS; 
 	return;
 }
 

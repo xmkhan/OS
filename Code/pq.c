@@ -16,7 +16,7 @@ int insert_pq(PCB* pq[], PCB* p) {
     if (p == NULL || p->priority >= NUM_PRIORITIES) {
         return -1;
     }
-
+    p->next = (void *)0;
     pr_head = pq[p->priority];
     if (pr_head == NULL){
       pq[p->priority] = p;

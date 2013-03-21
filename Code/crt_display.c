@@ -6,7 +6,7 @@
 #include "memory.h"
 #include "pq.h"
 
-#define NUM_STATES  7
+#define NUM_STATES  8
 #define COL_SIZE    10 
 #define BUFFER_SIZE 10
 
@@ -91,6 +91,8 @@ void crt_init(void) {
 #define def_crt_print(kprefix) void kprefix##crt_print(char *input) {\
   PCB* saved_process = current_process;\
 	MSG* msg = (void *)0;\
+  int iState = kprefix##get_interrupt_state();\
+  kprefix##set_interrupt_state(4);\
 	msg = (MSG*)kprefix##request_memory_block();\
   msg->msg_data = (void*) input;\
   msg->msg_type = 1;\
@@ -100,6 +102,7 @@ void crt_init(void) {
   kprefix##crt_i_process();\
   if(!(saved_process->pid == 0 && saved_process->state == NEW)) \
     kprefix##context_switch(saved_process);\
+  kprefix##set_interrupt_state(iState);\
 }
 
 #define def_crt_i_process(kprefix) void kprefix##crt_i_process(void) {\
@@ -121,7 +124,9 @@ void crt_init(void) {
   \
   /*non-blocking output*/\
   uart_i_process( 0, (uint8_t* ) msg->msg_data, length );\
+  if(msg->msg_type != 2) {\
 	kprefix##release_memory_block((void *)msg);\
+  }\
 }
 
 
@@ -222,8 +227,18 @@ void crt_output_int(int input) {
   
   //non-blocking output
   uart_i_process( 0, (uint8_t* ) msg->msg_data, length );
-	k_release_memory_block((void *)msg);
+	
+  if(msg->msg_type != 2)
+  {
+    if (__get_CONTROL() == BIT(0)) {
+      release_memory_block((void *)msg);
+    }
+    else {
+      k_release_memory_block((void *)msg);
+    }
+  }
 }*/
+
 
 /*
  * handle hot-key key press 
@@ -243,7 +258,8 @@ void hot_key_handler(void) {
   p_states[j++] = "Ready";
   p_states[j++] = "Running";
   p_states[j++] = "Message BLKD";
-  p_states[j++] = "Exit"; 
+  p_states[j++] = "Interrupted"; 
+	p_states[j++] = "Exit"; 
   p_states[j++] = "Memory BLKD";
   p_states[j++] = "Message Semaphore BLKD";
 
@@ -276,13 +292,13 @@ void hot_key_handler(void) {
     crt_print((void*)buffer);
     if(iterate->state == BLKD) {
       if(iterate->status == MEM_BLKD) {
-        crt_print((void*) p_states[5]);
+        crt_print((void*) p_states[6]);
       }
       else if(iterate->status == MSG_BLKD) {
         crt_print((void*) p_states[3]);
       }
       else if(iterate->status == SEM_BLKD) {
-          crt_print((void*) p_states[6]);
+          crt_print((void*) p_states[7]);
       }
     }
     else {
@@ -297,7 +313,6 @@ void hot_key_handler(void) {
   }
 	msg = (MSG *)receive_message(&sender_id);
 	saved_process = (PCB *)msg->msg_data;
-	release_memory_block(msg);
 	context_switch(saved_process);
 	}
 }

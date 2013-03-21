@@ -7,7 +7,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
-//#define KEYBOARD_ENABLED
+#define KEYBOARD_ENABLED
 
 // Tri-state variable -1 = fail, 0 = not tested, 1 = pass
 volatile int TEST1 = 0;
@@ -71,10 +71,8 @@ void null_process(void) {
   }
 }
 
-volatile int delay = 10000;
 volatile int msg1_status =0;
 volatile int msg2_status=0;
-volatile int msg3_status=0;
 // process 1: Testing for message sending
 void proc1(void)
 {
@@ -84,10 +82,9 @@ void proc1(void)
 		#ifndef KEYBOARD_ENABLED
     volatile int status = 10;
     volatile int send_status = 10;
-    int x1 = 10, x2 = 20, x3 = 30;
+    int x1 = 10, x2 = 20;
     volatile MSG *msg = (void *)0;
     volatile MSG *msg2 = (void *)0;
-    volatile MSG *msg3 = (void *)0;
     TEST1 = 0;
     if(msg1_status ==0) {
       msg = (volatile MSG *) request_memory_block();
@@ -103,16 +100,8 @@ void proc1(void)
       send_status = send_status  | send_message(2, (MSG *)msg2);
       msg2_status = 1;
     }
-    if (delay > 1 && msg3_status ==0) {
-      msg3 = (volatile MSG *) request_memory_block();
-      msg3->msg_data = (void *) &x3;
-      msg3->msg_type = 1;
-      send_status = send_status | delayed_send(3, (MSG *) msg3, delay);
-      delay /=10;
-      msg3_status = 1;
-    }
 
-    if (send_status == 0 || (msg1_status == 1 && msg2_status == 1 && (msg3_status == 1 || delay <= 1))) {
+    if (send_status == 0 || (msg1_status == 1 && msg2_status == 1)) {
       crt_print("G013_test: test 1 OK\n\r");
       TEST1 = 1;
     } else {
@@ -137,9 +126,7 @@ void proc2(void)
     int pass = 0;
     int release_status = 0;
     TEST2 = 0;
-    msg1_status = 0;
     msg = receive_message(&sender_pid);
-    msg2_status = 0;
     msg2 = receive_message(&sender_pid);
 
     if (*((int *)msg->msg_data) == 10 && *((int *)msg2->msg_data) == 20) {
@@ -171,12 +158,17 @@ void proc3(void)
   while(1) {
     volatile int ret_val = 10;
     #ifndef KEYBOARD_ENABLED
-    int sender_pid = -1, pass = 0;
+    int sender_pid = -1, pass = 0, x3 = 30;
     volatile MSG *msg = (void *)0;
+    volatile MSG *received_msg = (void *)0;
     TEST3 = 0;
-    msg3_status = 0;
-    msg = receive_message(&sender_pid);
-    if (*((int *)msg->msg_data) == 30) {
+    msg = (volatile MSG *)request_memory_block();
+    msg->msg_data = (void *) &x3;
+    msg->msg_type = 1;
+    delayed_send(3, (MSG *) msg, 10);
+
+    received_msg = receive_message(&sender_pid);
+    if (*((int *)received_msg->msg_data) == 30) {
       pass++;
     }
     release_memory_block((void *)msg);
@@ -189,7 +181,7 @@ void proc3(void)
      crt_print("G013_test: test 3 FAIL\n\r");
      TEST3 = -1;
    }
-   release_memory_block((void *)msg);
+    release_memory_block((void *)msg);
    #endif
    ret_val = release_processor();
  }

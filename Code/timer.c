@@ -17,7 +17,9 @@
 
 Process timer_process;
 PCB* timer_pcb;
+PCB *timer_saved_process = (void *)0;
 MSG* head = (void *) 0;
+int preempt =0;
 
 volatile uint32_t g_timer_count = 0; // increment every 1 ms
 
@@ -129,6 +131,7 @@ uint32_t timer_init(uint8_t n_timer)
   timer_process.pcb->mp_sp = (uint32_t *)sp;
   
   insert_process_pq(timer_process.pcb);
+  preempt = 0;
 	return 0;
 }
 
@@ -152,33 +155,41 @@ __asm void TIMER0_IRQHandler(void)
  */
 void c_TIMER0_IRQHandler(void)
 {
-  PCB* saved_process = (void *)0;
+  int iState = k_get_interrupt_state();
   
-  __disable_irq();
+  k_set_interrupt_state(0);
   
 /* ack inttrupt, see section  21.6.1 on pg 493 of LPC17XX_UM */
 	LPC_TIM0->IR = BIT(0);   
   
-  saved_process = current_process;
+  timer_saved_process = current_process;
   
   // check if at start the timer started before processes started being schedule, if so no context switch
-  if(!(saved_process->pid == 0 && saved_process->state == NEW))
+  if(!(timer_saved_process->pid == 0 && timer_saved_process->state == NEW))
     k_context_switch(timer_pcb);
   
   // call i process
   timeout_i_process();
   
   // check if at start the timer started before processes started being schedule, if so no context switch
-  if(!(saved_process->pid == 0 && saved_process->state == NEW))
-    k_context_switch(saved_process);
+  if(!(timer_saved_process->pid == 0 && timer_saved_process->state == NEW)  && !preempt)
+    k_context_switch(timer_saved_process);
+  
+  if(preempt)
+  {
+    preempt = 0;
+    k_set_interrupt_state(iState);
+    timer_saved_process->state = RDY;
+    k_release_processor();
+  }
 
-  __enable_irq();
+  k_set_interrupt_state(iState);
 }
 
 void timeout_i_process(void)
 {
   MSG* msg = (void *) 0;
-  
+  PCB *dest = (void *)0;
   g_timer_count++;
   msg = k_get_message(timer_pcb);
   while(msg != (void*) 0)
@@ -192,6 +203,11 @@ void timeout_i_process(void)
     MSG* env = dequeue_q(&head, MSG_T); // We have acquired a 'msg'
     unsigned int pid = env->destination_pid;
     k_send_message(pid, env);
+    dest = lookup_pid(pid);
+    if (timer_saved_process != (void *)0 && dest->priority < timer_saved_process->priority) {
+      preempt = 1;
+      break;
+    }    
   } 
 }
 

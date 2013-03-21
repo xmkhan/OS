@@ -14,7 +14,7 @@ PCB* keyboard_pcb;
 Process wall_clock_process;
 PCB *wall_clock_pcb;
 
-static PCB *saved_process = (void *)0;
+//static PCB *saved_process = (void *)0;
 	
 void wall_clock_init(void) {
   uint32_t *sp = (void *)0;
@@ -25,7 +25,7 @@ void wall_clock_init(void) {
   wall_clock_process.stack = k_request_memory_block();
   
   wall_clock_pcb->pid = WALL_CLOCK_PID;
-  wall_clock_pcb->priority = 10;
+  wall_clock_pcb->priority = 99;
   wall_clock_pcb->type = USER;
   wall_clock_pcb->state = NEW;
   wall_clock_pcb->head = (void *) 0;
@@ -60,7 +60,7 @@ void keyboard_init(void) {
   keyboard_process.stack = k_request_memory_block();
   
   keyboard_pcb->pid = KEYBOARD_PID;
-  keyboard_pcb->priority = 1;
+  keyboard_pcb->priority = 99;
   keyboard_pcb->type = INTERRUPT;
   keyboard_pcb->state = NEW;
   keyboard_pcb->head = (void *) 0;
@@ -116,15 +116,17 @@ void ts_to_hms(int ts, char *buffer)
 	buffer[6] = (secs / 10) + 48;
 	buffer[7] = (secs % 10) + 48;
 	buffer[8] = '\r';
-	buffer[9] = '\n';
-	buffer[10] = '\0';
+	buffer[9] = '\0';
 }
 
-void keyboard_proc(char *input)
+void keyboard_proc(char *input, PCB *saved_process)
 {
 	volatile char command[2];
 	volatile int i = 0;
+
+ 	int iState;
 	
+	MSG* msg = (void*) 0;
 	volatile char *b = input;
 	
   if (!b) {
@@ -155,35 +157,43 @@ void keyboard_proc(char *input)
 			ts_to_hms(0, CURR_TIME_BUFFER);
 			WALL_CLOCK_RUNNING = 1;
 			
-			saved_process = current_process;
+			msg =(MSG*) k_request_memory_block();
+			msg->msg_data = saved_process;
+			k_send_message(WALL_CLOCK_PID, msg);
 			
-			__enable_irq();
+      iState = k_get_interrupt_state();
+      k_set_interrupt_state(iState | 1);
 			
 			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
 				k_context_switch(wall_clock_pcb);
 			
-			__disable_irq();
+      k_set_interrupt_state(iState);
 		}
 		else if (command[1] == 'S') {
 			// wall clock set
 			WALL_CLOCK_START_TIMER = get_current_time();
 			ts_to_hms(hms_to_ts((char *)b), CURR_TIME_BUFFER);
 			WALL_CLOCK_RUNNING = 1;
-
-			saved_process = current_process;
 			
-			__enable_irq();
+			msg =(MSG*) k_request_memory_block();
+			msg->msg_data = saved_process;
+			k_send_message(WALL_CLOCK_PID, msg);
+			
+      iState = k_get_interrupt_state();
+      k_set_interrupt_state(iState | 1);
 			
 			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
 				k_context_switch(wall_clock_pcb);
 			
-			__disable_irq();
+      k_set_interrupt_state(iState);
 		}
 		else if (command[1] == 'T') {
+	
 			// wall clock terminate
 			WALL_CLOCK_RUNNING = 0;
+			
 			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
 				k_context_switch(saved_process);
@@ -193,14 +203,21 @@ void keyboard_proc(char *input)
 
 void wall_clock(void)
 {
-	int counter = WALL_CLOCK_START_TIMER;
-	int comparison = WALL_CLOCK_START_TIMER;
-	while (WALL_CLOCK_RUNNING) {
-		counter = get_current_time();
-		if (counter - comparison >= 1000) {
-			ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
-			crt_print(CURR_TIME_BUFFER);
-			comparison = counter;
-		}
+	while(1)
+	{
+		MSG* msg = (void *)0;
+		int counter = WALL_CLOCK_START_TIMER;
+		int comparison = WALL_CLOCK_START_TIMER;
+		while (WALL_CLOCK_RUNNING) {
+			counter = get_current_time();
+			if (counter - comparison >= 1000) {
+				ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
+				crt_print(CURR_TIME_BUFFER);
+				comparison = counter;
+			}
+		}	
+		
+		msg = get_message(wall_clock_pcb);
+	  context_switch(msg->msg_data);		
 	}
 }
