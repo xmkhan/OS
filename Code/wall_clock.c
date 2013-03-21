@@ -1,4 +1,8 @@
 #include "wall_clock.h"
+#include "memory.h"
+#include "crt_display.h"
+#include "timer.h"
+#include "message.h"
 
 int WALL_CLOCK_START_TIMER = 0;
 char CURR_TIME_BUFFER[11];

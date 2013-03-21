@@ -170,7 +170,6 @@ void c_UART0_IRQHandler(void)
 	uint8_t IIR_IntId;      /* Interrupt ID from IIR */		
 	uint8_t LSR_Val;        /* LSR Value             */
 	uint8_t dummy = dummy;	/* to clear interrupt upon LSR error */
-	char input_display[3];
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
@@ -184,8 +183,6 @@ void c_UART0_IRQHandler(void)
 	if (IIR_IntId & IIR_RDA) { /* Receive Data Avaialbe */
 		/* read UART. Read RBR will clear the interrupt */
 		input_char = pUart->RBR;
-		input_display[0] = input_char;
-		input_display[1] = '\0';
 		
 		if (input_char == 96) {
 
@@ -204,7 +201,7 @@ void c_UART0_IRQHandler(void)
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
 				k_context_switch(keyboard_pcb);
 			
-			keyboard_proc(&input_char, saved_process);
+			keyboard_proc(input_char, saved_process);
 			
 			g_UART0_buffer[g_UART0_count++] = input_char;
 		/*

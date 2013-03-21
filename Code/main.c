@@ -7,7 +7,7 @@
 #include "timer.h"
 #include "keyboard.h"
 #include "crt_display.h"
-
+#include "wall_clock.h"
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 

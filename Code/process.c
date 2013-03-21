@@ -7,6 +7,7 @@
 #include "keyboard.h"
 #include "crt_display.h"
 #include "uart_i_process.h"
+#include "wall_clock.h"
 
 #ifdef DEBUG
 #include <stdio.h>
