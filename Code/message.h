@@ -11,7 +11,7 @@ typedef struct PCB PCB;
 typedef struct MSG {
     int sender_pid;
     int destination_pid;
-    int msg_type; // 0 = empty, 1 = int...
+    int msg_type; // 0 = empty, 1 = int, 2 = kernel lvl messages, 3 = count_report, 4 = wakeup10...
     void *msg_data;
     struct MSG *next;
     long expiry_time;

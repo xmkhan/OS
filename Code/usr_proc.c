@@ -3,6 +3,7 @@
 #include "message.h"
 #include "usr_proc.h"
 #include "crt_display.h"
+#include "pq.h"
 
 #define INITIAL_xPSR 0x01000000
 
@@ -284,6 +285,95 @@ void proc6(void)
     crt_output_int(5-TEST_NUM_PASSED);
     crt_print("/5 tests FAIL\n\r");
     #endif
+    ret_val = release_processor();
+  }
+}
+
+void procA(void) {
+  volatile MSG *msg_envelope  = (void *)0;
+  volatile MSG *msg           = (void *)0;
+  volatile int release_status = 0;
+  volatile int send_status    = 10;
+  int sender_pid     = -1;
+  volatile int ret_val        = 20;
+  int *num                    = 0;
+  volatile char* msg_body     = (void *)0;
+  
+  msg = (volatile MSG *) request_memory_block();
+  //register with command decoder as handler of %Z commands
+  while(1) {
+    msg = receive_message(&sender_pid);
+    msg_body = (char*)msg->msg_data;
+    if(msg_body[0] == '%' 
+      && msg_body[1] == 'Z') {
+        release_status = release_memory_block((void *)msg);
+        break;
+    }
+    else {
+      release_status = release_memory_block((void *)msg);
+    }
+  }
+  
+  while(1) {
+    msg_envelope = (volatile MSG *) request_memory_block();
+    msg_envelope->msg_type = 3;
+    msg_envelope->msg_data = num;
+    send_status = send_message(8, (void*)msg_envelope);
+    *num += 1;
+    ret_val = release_processor();
+  }
+}
+
+void procB(void) {
+  volatile MSG* msg = (void*) 0;
+  int sender_pid    = -1;
+  while(1) {
+    msg = receive_message(&sender_pid);
+    send_message(9, (void*)msg);
+  }
+}
+
+void procC(void) {
+  volatile MSG* head          = (void *) 0;
+  volatile MSG* msg           = (void *) 0;
+  volatile MSG* q             = (void *) 0;
+  volatile int release_status = 0;
+  volatile int sent_status    = 10;
+  volatile int ret_val        = 20;
+  int sender_pid              = -1;
+  int* msg_int                = (void*) 0;
+  
+  while(1) {
+    if(head == (void*) 0) {
+      msg = receive_message(&sender_pid);
+    }
+    else {
+      msg = dequeue_q(&head, MSG_T);
+    }
+    if (msg->msg_type == 3) {
+      msg_int = (int*) msg->msg_data;
+      if(*msg_int % 20 == 0) {
+        //send message to crt
+        send_message(11, (void*)msg);
+        
+        //send delayed messaged
+        q = (volatile MSG *) request_memory_block();
+        q->msg_type = 4;
+        delayed_send(9, (MSG *) q, 10);
+        
+        //add messages to queue while waiting for delayed message
+        while(1) {
+          msg = receive_message(&sender_pid);
+          if(msg->msg_type == 4) {
+            break;
+          }
+          else {
+            enqueue_q(&head, (void*)msg, MSG_T);
+          }
+        }
+      }
+    }
+    release_status = release_memory_block((void *)msg);
     ret_val = release_processor();
   }
 }
