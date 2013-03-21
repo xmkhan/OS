@@ -110,7 +110,7 @@ void keyboard_proc(char input, PCB *saved_process)
 		input_display[1] = '\0';
 		key_msg->msg_data = input_display;
 		k_send_message(CRT_PID, key_msg);
-		k_crt_i_process();
+//		k_crt_i_process();
 		return;
 	}
 	else {
@@ -120,7 +120,7 @@ void keyboard_proc(char input, PCB *saved_process)
 		input_display[2] = '\0';
 		key_msg->msg_data = input_display;
 		k_send_message(CRT_PID, key_msg);
-		k_crt_i_process();
+	//	k_crt_i_process();
 		curr_key_buf_pos = 0;
 	}
 	
