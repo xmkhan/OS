@@ -16,7 +16,7 @@ volatile uint8_t g_UART0_TX_empty=1;
 volatile uint8_t g_UART0_buffer[BUFSIZE];
 volatile uint32_t g_UART0_count = 0;
 PCB *saved_process;
-MSG *key_msg = (void *)0;
+MSG *hotkey_msg = (void *)0;
 
 
 /**
@@ -141,8 +141,8 @@ int i_uart_init(int n_uart) {
 	NVIC_EnableIRQ(UART0_IRQn); /* CMSIS function */
   
   // Allocate memory for keyboard so that when memory runs out keyboard features used for debugging still work
-  key_msg = (MSG*) k_request_memory_block();  
-	key_msg->msg_type = 2;
+  hotkey_msg = (MSG*) k_request_memory_block();  
+	hotkey_msg->msg_type = 2;
   
 	return 0;
 }
@@ -192,31 +192,38 @@ void c_UART0_IRQHandler(void)
 			if (!key_pressed) {
 				saved_process = current_process;
 			
-				key_msg->msg_data = (void *)saved_process;
-				k_send_message(HOTKEY_PID, key_msg);
+				hotkey_msg->msg_data = (void *)saved_process;
+				k_send_message(HOTKEY_PID, hotkey_msg);
 				k_context_switch(hotkey_pcb);
 			}
 			key_pressed = !key_pressed;
 			
 		} else {
-		g_UART0_buffer[g_UART0_count++] = input_char;
-		
+			saved_process = current_process;
+			// check if at start the timer started before processes started being schedule, if so no context switch
+			if(!(saved_process->pid == 0 && saved_process->state == NEW))
+				k_context_switch(keyboard_pcb);
+			
+			keyboard_proc(&input_char, saved_process);
+			
+			g_UART0_buffer[g_UART0_count++] = input_char;
+		/*
 		if (input_char == 13) {
 			g_UART0_buffer[--g_UART0_count] = '\0';
 			g_UART0_count = 0;
 			
 			input_display[0] = '\n';
 			input_display[1] = '\0';
-			key_msg->msg_data = input_display;
-			k_send_message(CRT_PID, key_msg);
+			hotkey_msg->msg_data = input_display;
+			k_send_message(CRT_PID, hotkey_msg);
 			k_crt_i_process();
 			
 			g_UART0_TX_empty = 1;
 			
 			input_display[0] = '\r';
 			input_display[1] = '\0';
-			key_msg->msg_data = input_display;
-			k_send_message(CRT_PID, key_msg);
+			hotkey_msg->msg_data = input_display;
+			k_send_message(CRT_PID, hotkey_msg);
 			k_crt_i_process();
 			
 			saved_process = current_process;
@@ -235,15 +242,15 @@ void c_UART0_IRQHandler(void)
 			//g_UART0_TX_empty = 1;
 			//input_display[0] = '\r';
 			//input_display[1] = '\0';
-			//key_msg->msg_data = input_display;
-			//msg_send_status = send_message(CRT_PID, key_msg);
+			//hotkey_msg->msg_data = input_display;
+			//msg_send_status = send_message(CRT_PID, hotkey_msg);
 		}
 		else {
-			key_msg->msg_data = input_display;
-			k_send_message(CRT_PID, key_msg);
+			hotkey_msg->msg_data = input_display;
+			k_send_message(CRT_PID, hotkey_msg);
 			k_crt_i_process();
 		}
-		
+		*/
 			if ( g_UART0_count == BUFSIZE ) {
 				//g_UART0_buffer[g_UART0_count] = '\0';
 				//keyboard_proc((char *)g_UART0_buffer);

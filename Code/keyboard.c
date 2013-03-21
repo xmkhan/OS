@@ -5,51 +5,20 @@
 #include "message.h"
 #include "crt_display.h"
 
-int WALL_CLOCK_START_TIMER = 0;
-char CURR_TIME_BUFFER[11];
+char KEYBOARD_INPUT_BUFFER[64];
+int curr_key_buf_pos = 0;
 int WALL_CLOCK_RUNNING = 0;
+
+MSG *key_msg = (void *)0;
+
+int COMMAND_PIDS[20] = {0};
+char COMMAND_CHARS[20];
+int command_pos = 0;
 
 Process keyboard_process;
 PCB* keyboard_pcb;
-Process wall_clock_process;
-PCB *wall_clock_pcb;
 
 //static PCB *saved_process = (void *)0;
-	
-void wall_clock_init(void) {
-  uint32_t *sp = (void *)0;
-  int j = 0;
-  
-  // initialize keyboard display process
-  wall_clock_pcb = k_request_memory_block();
-  wall_clock_process.stack = k_request_memory_block();
-  
-  wall_clock_pcb->pid = WALL_CLOCK_PID;
-  wall_clock_pcb->priority = 99;
-  wall_clock_pcb->type = USER;
-  wall_clock_pcb->state = NEW;
-  wall_clock_pcb->head = (void *) 0;
-  wall_clock_pcb->next = (void *) 0;
-  wall_clock_process.pcb = wall_clock_pcb;
-  wall_clock_process.start_loc = (uint32_t)wall_clock;
-     
-  sp = (uint32_t *)((uint32_t)wall_clock_process.stack + MEMORY_BLOCK_SIZE);
-    
-  /* 8 bytes alignement adjustment to exception stack frame */
-  if (!(((uint32_t)sp) & 0x04)) {
-      --sp;
-  }
-    
-  *(--sp)  = 0x01000000;              /* user process initial xPSR */ 
-  *(--sp)  = wall_clock_process.start_loc ;  /* PC contains the entry point of the process */
-
-  for (j=0; j < 6; j++) {             /* R0-R3, R12 are cleared with 0 */
-    *(--sp) = 0x0;
-  }  
-  wall_clock_process.pcb->mp_sp = (uint32_t *)sp;
-  
-  insert_process_pq(wall_clock_process.pcb);
-}
 
 void keyboard_init(void) {
   uint32_t *sp = (void *)0;
@@ -84,54 +53,51 @@ void keyboard_init(void) {
   keyboard_process.pcb->mp_sp = (uint32_t *)sp;
   
   insert_process_pq(keyboard_process.pcb);
-
-}
-
-int hms_to_ts(char *hms)
-{
-	int hours = (int)((hms[0]-48) * 10 + hms[1]-48);
-	int mins = (int)((hms[3]-48) * 10 + hms[4]-48);
-	int secs = (int)((hms[6]-48) * 10 + hms[7]-48);
-	return (hours*3600) + (mins*60) + (secs);
-}
-
-void ts_to_hms(int ts, char *buffer)
-{
-	int hours;
-	int mins;
-	int secs;
-	ts %= 86400;
-	hours = ts / 3600;
-	ts %= 3600;
-	mins = ts / 60;
-	ts %= 60;
-	secs = ts;
 	
-	buffer[0] = (hours / 10) + 48;
-	buffer[1] = (hours % 10) + 48;
-	buffer[2] = ':';
-	buffer[3] = (mins / 10) + 48;
-	buffer[4] = (mins % 10) + 48;
-	buffer[5] = ':';
-	buffer[6] = (secs / 10) + 48;
-	buffer[7] = (secs % 10) + 48;
-	buffer[8] = '\r';
-	buffer[9] = '\0';
+	// Allocate memory for keyboard so that when memory runs out keyboard features used for debugging still work
+  key_msg = (MSG*) k_request_memory_block();  
+	key_msg->msg_type = 2;
+
 }
 
-void keyboard_proc(char *input, PCB *saved_process)
+void keyboard_proc(char input, PCB *saved_process)
 {
 	volatile char command[2];
 	volatile int i = 0;
 
  	int iState;
 	
-	MSG* msg = (void*) 0;
-	volatile char *b = input;
+	char input_display[3];
 	
-  if (!b) {
+	MSG *reg_msg = k_get_message();
+	if (reg_msg->msg_type == 4) {
+		COMMAND_PIDS[command_pos] = reg_msg->sender_pid;
+		COMMAND_CHARS[command_pos] = *(reg_msg->msg_data);
+		command_pos++;
+	}
+	
+	// store input char in buffer, or process buffer if Enter is pressed
+	if (input != 13) {
+		KEYBOARD_INPUT_BUFFER[curr_key_buf_pos++] = input;
+		input_display[0] = input;
+		input_display[1] = '\0';
+		key_msg->msg_data = input_display;
+		k_send_message(CRT_PID, key_msg);
+		k_crt_i_process();
 		return;
 	}
+	else {
+		KEYBOARD_INPUT_BUFFER[curr_key_buf_pos++] = '\0';
+		input_display[0] = '\n';
+		input_display[1] = '\r';
+		input_display[2] = '\0';
+		key_msg->msg_data = input_display;
+		k_send_message(CRT_PID, key_msg);
+		k_crt_i_process();
+		curr_key_buf_pos = 0;
+	}
+	
+	volatile char *b = KEYBOARD_INPUT_BUFFER;
 	
 	// respond to commands that start with % only
 	if (*b != '%') {
@@ -150,6 +116,12 @@ void keyboard_proc(char *input, PCB *saved_process)
 	b++;
 	
 	// handle command types
+	for (i = 0; i < command_pos; i++) {
+		if (command[0] == COMMAND_CHARS[i]) {
+			k_send_message(COMMAND_PIDS[i], msg);
+		}
+	}
+	/*
 	if (command[0] == 'W') {
 		if (command[1] == 'R') {
 			// wall clock reset
@@ -199,25 +171,5 @@ void keyboard_proc(char *input, PCB *saved_process)
 				k_context_switch(saved_process);
 		}
 	}
-}
-
-void wall_clock(void)
-{
-	while(1)
-	{
-		MSG* msg = (void *)0;
-		int counter = WALL_CLOCK_START_TIMER;
-		int comparison = WALL_CLOCK_START_TIMER;
-		while (WALL_CLOCK_RUNNING) {
-			counter = get_current_time();
-			if (counter - comparison >= 1000) {
-				ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
-				crt_print(CURR_TIME_BUFFER);
-				comparison = counter;
-			}
-		}	
-		
-		msg = get_message(wall_clock_pcb);
-	  context_switch(msg->msg_data);		
-	}
+	*/
 }
