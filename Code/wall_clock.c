@@ -47,7 +47,7 @@ void wall_clock_init(void) {
   wall_clock_process.stack = k_request_memory_block();
   
   wall_clock_pcb->pid = WALL_CLOCK_PID;
-  wall_clock_pcb->priority = 99;
+  wall_clock_pcb->priority = 0;
   wall_clock_pcb->type = USER;
   wall_clock_pcb->state = NEW;
   wall_clock_pcb->head = (void *) 0;
