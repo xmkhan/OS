@@ -1,5 +1,6 @@
 #include "uart_i_process.h"
 #include "crt_display.h"
+#include "wall_clock.h"
 #include "usr_proc.h"
 #include "message.h"
 #include "process.h"
@@ -99,14 +100,28 @@ void crt_print(char *input) {
   send_message(CRT_PID, msg);
 }
 
+void reverse_c_string(volatile char* start, volatile char* end) {
+	char temp;
+	
+	while (start <= end) {
+		temp = *start;
+		*start = *end;
+		*end = temp;
+		end--;
+		start++;
+	}
+	
+}
+
 /**
  * Convert a positive integer or 0 to char*
  * @param buffer - stores char* representation
  *        input  - int to be converted
  */
 void int_to_char_star(int input, volatile char* b) {
+	volatile char* start = b;
   
-  //case for 0;
+	//case for 0;
   if(input == 0) {
     *b = '0';
     b++;
@@ -118,8 +133,11 @@ void int_to_char_star(int input, volatile char* b) {
     input /= 10;
     b++;
   }
+	
+	reverse_c_string(start, --b);
   
   //add null terminating character
+	b++;
   *b   = '\0';
 }
 
@@ -172,6 +190,57 @@ void concat (char** mem_block, char* print)
   }
 }
 
+void hot_key_helper(char* p_states[], char** out, int i, PCB *pcb) {
+	int n = 0, col_empty = 0;
+	PCB *iterate;  
+	
+	if(i < NUM_PROCESSES) 
+		iterate = pcb_list[i];
+	else 
+		iterate = pcb;
+    
+	//output the process id
+	int_to_char_star(i, buffer);
+	n = i/10 + 1;
+	col_empty = COL_SIZE - n;
+	for(;n < col_empty; n++) {
+		buffer[n] = ' ';
+	}
+	concat(out, buffer);
+	
+	//output the priority
+	int_to_char_star(iterate->priority, buffer);
+	n = iterate->priority/10 + 1;
+	col_empty = COL_SIZE - n;
+	for(;n < col_empty; n++) {
+		buffer[n] = ' ';
+	}
+	
+	//output the state
+	concat(out, buffer);
+	if(iterate->state == BLKD) {
+		if(iterate->status == MEM_BLKD) {
+			concat(out, p_states[6]);
+		}
+		else if(iterate->status == MSG_BLKD) {
+			concat(out, p_states[3]);
+		}
+		else if(iterate->status == SEM_BLKD) {
+				concat(out, p_states[7]);
+		}
+	}
+	else {
+		concat(out, p_states[iterate->state]);
+	}
+	
+	//Print a new line at the end
+	buffer[0] = '\n';
+	buffer[1] = '\r';
+	buffer[2] = '\0';
+	concat(out, buffer);    
+	
+}
+
 
 /*
  * handle hot-key key press 
@@ -182,8 +251,7 @@ void hot_key_handler(void) {
 	int sender_id = 0;
   char* out = (char*) hotkey_data->msg_data;
   char* header = "\n\rProc_id  Priority Status\n\r";
-  int i = 0, j=0, n = 0, col_empty = 0;
-  PCB *iterate;  
+  int i = 0, j=0;
 	PCB *saved_process;
   
   //States' char* representation
@@ -204,48 +272,13 @@ void hot_key_handler(void) {
   //iterate through every process
   //and output relevant information
   for(;i < NUM_PROCESSES; i++) {
-    iterate = pcb_list[i];
-    
-    //output the process id
-    int_to_char_star(i, buffer);
-    n = i/10 + 1;
-    col_empty = COL_SIZE - n;
-    for(;n < col_empty; n++) {
-      buffer[n] = ' ';
-    }
-    concat(&out, buffer);
-    
-    //output the priority
-    int_to_char_star(iterate->priority, buffer);
-    n = iterate->priority/10 + 1;
-    col_empty = COL_SIZE - n;
-    for(;n < col_empty; n++) {
-      buffer[n] = ' ';
-    }
-    
-    //output the state
-    concat(&out, buffer);
-    if(iterate->state == BLKD) {
-      if(iterate->status == MEM_BLKD) {
-        concat(&out, p_states[6]);
-      }
-      else if(iterate->status == MSG_BLKD) {
-        concat(&out, p_states[3]);
-      }
-      else if(iterate->status == SEM_BLKD) {
-          concat(&out, p_states[7]);
-      }
-    }
-    else {
-      concat(&out, p_states[iterate->state]);
-    }
-    
-    //Print a new line at the end
-    buffer[0] = '\n';
-    buffer[1] = '\r';
-    buffer[2] = '\0';
-    concat(&out, buffer);    
+		hot_key_helper(p_states, &out, i, (void *) 0);
   }
+	
+	//TODO: add set priority to the processes to output
+	hot_key_helper(p_states, &out, wall_clock_pcb->pid, wall_clock_pcb);
+	hot_key_helper(p_states, &out, crt_pcb->pid, crt_pcb);
+
   *out = '\0';
   send_message(CRT_PID, hotkey_data);
 	msg = (MSG *)receive_message(&sender_id);
