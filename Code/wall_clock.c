@@ -30,7 +30,7 @@ void ts_to_hms(int ts, char *buffer)
 	mins = ts / 60;
 	ts %= 60;
 	secs = ts;
-	
+
 	buffer[0] = (hours / 10) + 48;
 	buffer[1] = (hours % 10) + 48;
 	buffer[2] = ':';
@@ -44,44 +44,43 @@ void ts_to_hms(int ts, char *buffer)
 }
 
 void wall_clock_init(void) {
-	
+
   uint32_t *sp = (void *)0;
   int j = 0;
 	MSG *init_kcd_msg = (void *)0;
-  
+
   // initialize keyboard display process
   wall_clock_pcb = k_request_memory_block();
   wall_clock_process.stack = k_request_memory_block();
-  
+
   wall_clock_pcb->pid = WALL_CLOCK_PID;
   wall_clock_pcb->priority = 1;
-	// -- TODO: set type to SYSTEM when implemented
   wall_clock_pcb->type = SYSTEM;
   wall_clock_pcb->state = NEW;
   wall_clock_pcb->head = (void *) 0;
   wall_clock_pcb->next = (void *) 0;
   wall_clock_process.pcb = wall_clock_pcb;
   wall_clock_process.start_loc = (uint32_t)wall_clock;
-     
+
   sp = (uint32_t *)((uint32_t)wall_clock_process.stack + MEMORY_BLOCK_SIZE);
-    
+
   /* 8 bytes alignement adjustment to exception stack frame */
   if (!(((uint32_t)sp) & 0x04)) {
       --sp;
   }
-    
-  *(--sp)  = 0x01000000;              /* user process initial xPSR */ 
+
+  *(--sp)  = 0x01000000;              /* user process initial xPSR */
   *(--sp)  = wall_clock_process.start_loc ;  /* PC contains the entry point of the process */
 
   for (j=0; j < 6; j++) {             /* R0-R3, R12 are cleared with 0 */
     *(--sp) = 0x0;
-  }  
+  }
   wall_clock_process.pcb->mp_sp = (uint32_t *)sp;
-  
+
   insert_process_pq(wall_clock_process.pcb);
-	
+
 	current_process = wall_clock_pcb;
-	
+
 	init_kcd_msg = (MSG *)k_request_memory_block();
 	init_kcd_msg->msg_type = 4;
 	init_kcd_msg->msg_data = "W";
@@ -97,11 +96,11 @@ void wall_clock(void)
 		int counter = 0;
 		int sender_pid = 0;
 		int comparison = 0;
-		
+
 		command = receive_message(&sender_pid);
 		counter = WALL_CLOCK_START_TIMER;
 		comparison = WALL_CLOCK_START_TIMER;
-		
+
 		if (((char *)command->msg_data)[0] == 'W') {
 			if (((char *)command->msg_data)[1] == 'R')
 			{
@@ -116,7 +115,7 @@ void wall_clock(void)
 				WALL_CLOCK_RUNNING = 1;
 			}
 		}
-		
+
 		while (WALL_CLOCK_RUNNING) {
 			command = get_message(wall_clock_pcb);
 			if (command != 0)
@@ -146,8 +145,8 @@ void wall_clock(void)
 				crt_print(CURR_TIME_BUFFER);
 				comparison = counter;
 			}
-		}	
-		
+		}
+
 		//release_processor();
 	}
 }
