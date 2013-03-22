@@ -6,7 +6,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
-#define KEYBOARD_ENABLED
+//#define KEYBOARD_ENABLED
 
 // Tri-state variable -1 = fail, 0 = not tested, 1 = pass
 volatile int TEST1 = 0;
@@ -199,7 +199,7 @@ void proc4(void)
     TEST4 = 0;
     #ifndef KEYBOARD_ENABLED
     i = get_process_priority(4);
-    if ( i == 1) {
+    if ( i == 2) {
       pass++;
     }
     i = set_process_priority(4, 3);
@@ -207,9 +207,9 @@ void proc4(void)
     if (i == 3) {
       pass++;
     }
-    i = set_process_priority(4,1);
+    i = set_process_priority(4,2);
     i = get_process_priority(4);
-    if (i == 1) {
+    if (i == 2) {
       pass++;
     }
     if (pass == 3) {
