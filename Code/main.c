@@ -8,6 +8,7 @@
 #include "keyboard.h"
 #include "crt_display.h"
 #include "wall_clock.h"
+#include "set_process_pcb.h"
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
@@ -23,6 +24,7 @@ void __init()
 	 i_uart_init(0);
    timer_init(0);
 	 wall_clock_init();
+	 set_process_pcb_init();
 	 process_reset();
 }
 
