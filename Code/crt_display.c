@@ -118,7 +118,7 @@ void reverse_c_string(volatile char* start, volatile char* end) {
  * @param buffer - stores char* representation
  *        input  - int to be converted
  */
-void int_to_char_star(int input, volatile char* b) {
+void int2str(int input, volatile char* b) {
 	volatile char* start = b;
   
 	//case for 0;
@@ -142,7 +142,7 @@ void int_to_char_star(int input, volatile char* b) {
 }
 
 void crt_output_int(int input) {
-  int_to_char_star(input, buffer);
+  int2str(input, buffer);
   crt_print(buffer);
 }
 
@@ -200,7 +200,7 @@ void hot_key_helper(char* p_states[], char** out, int i, PCB *pcb) {
 		iterate = pcb;
     
 	//output the process id
-	int_to_char_star(i, buffer);
+	int2str(i, buffer);
 	n = i/10 + 1;
 	col_empty = COL_SIZE - n;
 	for(;n < col_empty; n++) {
@@ -209,7 +209,7 @@ void hot_key_helper(char* p_states[], char** out, int i, PCB *pcb) {
 	concat(out, buffer);
 	
 	//output the priority
-	int_to_char_star(iterate->priority, buffer);
+	int2str(iterate->priority, buffer);
 	n = iterate->priority/10 + 1;
 	col_empty = COL_SIZE - n;
 	for(;n < col_empty; n++) {
