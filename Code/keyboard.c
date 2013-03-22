@@ -24,24 +24,6 @@ volatile char input_display[3];
 
 //static PCB *saved_process = (void *)0;
 
-int str2int(char *s) {
-	char *t = s;
-	int total = 0;
-	int multiplier = 1;
-	
-	while (t) {
-		t++;
-	}
-	t--;
-	
-	while (t != s) {
-		total += ((*s) + 48) * multiplier;
-		multiplier *= 10;
-		t--;
-	}
-	return total;
-}
-
 void keyboard_init(void) {
   uint32_t *sp = (void *)0;
   int j = 0;
@@ -75,34 +57,17 @@ void keyboard_init(void) {
   keyboard_process.pcb->mp_sp = (uint32_t *)sp;
   
   insert_process_pq(keyboard_process.pcb);
-	
-	// Allocate memory for keyboard so that when memory runs out keyboard features used for debugging still work
-  //key_msg = (MSG*) k_request_memory_block();  
-	//key_msg->msg_type = 2;
-	
-	//error_msg = (MSG *)k_request_memory_block();
-	//error_msg->msg_type = 1;
-	//error_msg->msg_data = "Invalid command.";
-	
-	//command_msg = (MSG *)k_request_memory_block();
-	//command_msg->msg_type = 2;
 }
 
 void keyboard_proc(char input, PCB *saved_process)
 {
 	volatile char command[2];
 	volatile int i = 0;
-
-	char pid_str[4];
-	int pid;
-	char priority_str[4];
-	int priority;
 	
 	volatile char *b = KEYBOARD_INPUT_BUFFER;
 	MSG *key_msg = (MSG *)k_request_memory_block();
 	MSG *reg_msg = k_get_message(keyboard_pcb);
 	MSG *command_msg = (void *)0;
-	MSG *error_msg = (void *)0;
 	key_msg->msg_type = 2;
 	
 	if (reg_msg != 0 && reg_msg->msg_type == 4) {
@@ -152,41 +117,6 @@ void keyboard_proc(char input, PCB *saved_process)
 	command_msg->msg_type = 2;
 	command_msg->msg_data = (void *)b;
 	
-	// handle %C ourselves
-	// -- TODO: move to its own process
-	if (command[0] == 'C') {
-		b++;
-		// get first parameter: pid
-		i = 0;
-		while (*b != ' ' && *b != '\0') {
-			pid_str[i] = *b;
-			b++;
-			i++;
-		}
-		pid_str[i] = '\0';
-		pid = str2int(pid_str);
-		
-		// get second parameter: new priority
-		i = 0;
-		while (*b != ' ' && *b != '\0') {
-			priority_str[i] = *b;
-			b++;
-			i++;
-		}
-		priority_str[i] = '\0';
-		priority = str2int(priority_str);
-		
-		// set process priority
-		i = k_set_process_priority(pid, priority);
-		if (i == -1) {
-			error_msg = (MSG *)k_request_memory_block();
-			error_msg->msg_type = 1;
-			error_msg->msg_data = "Invalid command.\n\r";
-			k_send_message(CRT_PID, error_msg);
-		}
-		return;
-	}
-	
 	// handle command types
 	for (i = 0; i < command_pos; i++) {
 		if (command[0] == COMMAND_CHARS[i]) {
@@ -194,55 +124,4 @@ void keyboard_proc(char input, PCB *saved_process)
 			break;
 		}
 	}
-	/*
-	if (command[0] == 'W') {
-		if (command[1] == 'R') {
-			// wall clock reset
-			WALL_CLOCK_START_TIMER = get_current_time();
-			ts_to_hms(0, CURR_TIME_BUFFER);
-			WALL_CLOCK_RUNNING = 1;
-			
-			msg =(MSG*) k_request_memory_block();
-			msg->msg_data = saved_process;
-			k_send_message(WALL_CLOCK_PID, msg);
-			
-      iState = k_get_interrupt_state();
-      k_set_interrupt_state(iState | 1);
-			
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(wall_clock_pcb);
-			
-      k_set_interrupt_state(iState);
-		}
-		else if (command[1] == 'S') {
-			// wall clock set
-			WALL_CLOCK_START_TIMER = get_current_time();
-			ts_to_hms(hms_to_ts((char *)b), CURR_TIME_BUFFER);
-			WALL_CLOCK_RUNNING = 1;
-			
-			msg =(MSG*) k_request_memory_block();
-			msg->msg_data = saved_process;
-			k_send_message(WALL_CLOCK_PID, msg);
-			
-      iState = k_get_interrupt_state();
-      k_set_interrupt_state(iState | 1);
-			
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(wall_clock_pcb);
-			
-      k_set_interrupt_state(iState);
-		}
-		else if (command[1] == 'T') {
-	
-			// wall clock terminate
-			WALL_CLOCK_RUNNING = 0;
-			
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(saved_process);
-		}
-	}
-	*/
 }
