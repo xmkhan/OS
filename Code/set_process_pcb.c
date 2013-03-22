@@ -69,49 +69,51 @@ int str2int(char *s) {
 }
 
 void set_process_pcb_proc(void) {
-	char pid_str[4];
-	int pid;
-	char priority_str[4];
-	int priority;
-	
-	int sender_pid = 0;
-	MSG *command = receive_message(&sender_pid);
-	MSG *error_msg = (void *)0;
-	
-	char *b = (char *)command->msg_data;
-	int i = 0;
-	
-	if (*b == 'C') {
-		b++;
-		// get first parameter: pid
-		i = 0;
-		while (*b != ' ' && *b != '\0') {
-			pid_str[i] = *b;
-			b++;
-			i++;
-		}
-		pid_str[i] = '\0';
-		pid = str2int(pid_str);
+	while (1) {
+		char pid_str[4];
+		int pid;
+		char priority_str[4];
+		int priority;
 		
-		// get second parameter: new priority
-		i = 0;
-		while (*b != ' ' && *b != '\0') {
-			priority_str[i] = *b;
-			b++;
-			i++;
-		}
-		priority_str[i] = '\0';
-		priority = str2int(priority_str);
+		int sender_pid = 0;
+		MSG *command = receive_message(&sender_pid);
+		MSG *error_msg = (void *)0;
 		
-		// set process priority
-		i = k_set_process_priority(pid, priority);
-		if (i == -1) {
-			error_msg = (MSG *)k_request_memory_block();
-			error_msg->msg_type = 1;
-			error_msg->msg_data = "Invalid command.\n\r";
-			k_send_message(CRT_PID, error_msg);
+		char *b = (char *)command->msg_data;
+		int i = 0;
+		
+		if (*b == 'C') {
+			b++;
+			// get first parameter: pid
+			i = 0;
+			while (*b != ' ' && *b != '\0') {
+				pid_str[i] = *b;
+				b++;
+				i++;
+			}
+			pid_str[i] = '\0';
+			pid = str2int(pid_str);
+			
+			// get second parameter: new priority
+			i = 0;
+			while (*b != ' ' && *b != '\0') {
+				priority_str[i] = *b;
+				b++;
+				i++;
+			}
+			priority_str[i] = '\0';
+			priority = str2int(priority_str);
+			
+			// set process priority
+			i = k_set_process_priority(pid, priority);
+			if (i == -1) {
+				error_msg = (MSG *)k_request_memory_block();
+				error_msg->msg_type = 1;
+				error_msg->msg_data = "Invalid command.\n\r";
+				k_send_message(CRT_PID, error_msg);
+			}
 		}
-		return;
+		release_processor();
 	}
 }
 
