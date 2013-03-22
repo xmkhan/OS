@@ -8,6 +8,7 @@
 #include "crt_display.h"
 #include "uart_i_process.h"
 #include "wall_clock.h"
+#include "set_process_pcb.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -69,6 +70,8 @@ PCB *lookup_pid(int pid) {
 			return hotkey_pcb;
 		case KEYBOARD_PID:
 			return keyboard_pcb;
+		case SET_PROCESS_PCB_PID:
+			return set_process_pcb_pcb;
 	}
 	return (void *)0;
 }

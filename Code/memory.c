@@ -11,7 +11,7 @@ extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
 // Store configuration details for memory
 static unsigned int MEMORY_SIZE;
-static int NUM_MEMORY_BLOCKS;
+int NUM_MEMORY_BLOCKS;
 
 // PQ storing PCBs which are blocked due to no memory available during request memory
 volatile PCB *mem_pq[NUM_PRIORITIES];

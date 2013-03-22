@@ -9,6 +9,8 @@
 
 // Configuration parameters for memory
 #define MEMORY_BLOCK_SIZE 512
+// TODO: remove exposure
+extern int NUM_MEMORY_BLOCKS;
 
 // MemNode struct which contains information about the memory block,
 // and is stored as a memory at the start of each memory block

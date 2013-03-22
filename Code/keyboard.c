@@ -68,13 +68,17 @@ void keyboard_proc(char input, PCB *saved_process)
 	MSG *key_msg = (MSG *)k_request_memory_block();
 	MSG *reg_msg = k_get_message(keyboard_pcb);
 	MSG *command_msg = (void *)0;
-	key_msg->msg_type = 2;
+	key_msg->msg_type = 1;
 	
-	if (reg_msg != 0 && reg_msg->msg_type == 4) {
-		COMMAND_PIDS[command_pos] = reg_msg->sender_pid;
-		COMMAND_CHARS[command_pos] = *((char *)reg_msg->msg_data);
-		command_pos++;
-		k_release_memory_block((void *)reg_msg);
+	while (reg_msg != (void *)0) {
+		
+		if (reg_msg != 0 && reg_msg->msg_type == 4) {
+			COMMAND_PIDS[command_pos] = reg_msg->sender_pid;
+			COMMAND_CHARS[command_pos] = *((char *)reg_msg->msg_data);
+			command_pos++;
+			k_release_memory_block((void *)reg_msg);
+		}
+		reg_msg = k_get_message(keyboard_pcb);
 	}
 	
 	// store input char in buffer, or process buffer if Enter is pressed
@@ -114,7 +118,7 @@ void keyboard_proc(char input, PCB *saved_process)
 	// skip over %
 	b = KEYBOARD_INPUT_BUFFER+1;
 	command_msg = (MSG *)k_request_memory_block();
-	command_msg->msg_type = 2;
+	command_msg->msg_type = 1;
 	command_msg->msg_data = (void *)b;
 	
 	// handle command types

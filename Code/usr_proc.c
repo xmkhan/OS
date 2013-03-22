@@ -7,9 +7,10 @@
 
 #define INITIAL_xPSR 0x01000000
 
-//#define KEYBOARD_ENABLED
+#define KEYBOARD_ENABLED
 
 // Tri-state variable -1 = fail, 0 = not tested, 1 = pass
+#define NUM_TESTS 5
 volatile int TEST1 = 0;
 volatile int TEST2 = 0;
 volatile int TEST3 = 0;
@@ -86,8 +87,7 @@ void proc1(void)
     volatile MSG *msg = (void *)0;
     volatile MSG *msg2 = (void *)0;
 	  // Output test results
-		crt_print("G013_test: START\n\r");
-		//crt_print("G013_test: total 7 tests\n\r");
+		crt_print("G013_test: START\n\rG013_test: total 7 tests\n\r");
 
     TEST1 = 0;
     if(msg1_status ==0) {
@@ -262,22 +262,38 @@ void proc6(void)
 
   while (1) {
     volatile int ret_val = 20;
+		#ifndef KEYBOARD_ENABLED
     volatile int TEST_NUM_PASSED = 0;
-    #ifndef KEYBOARD_ENABLED
+		const char *PASS_STRING = "G013_test: \a/5 OK\n\rG013_test: \a/5 FAIL\n\r";
+		char buffer[50];
+		int count = 0;
+		int count_copy = 0;
+		
+   
     if (TEST1 != -1) TEST_NUM_PASSED++;
     if (TEST2 != -1) TEST_NUM_PASSED++;
     if (TEST3 != -1) TEST_NUM_PASSED++;
     if (TEST4 != -1) TEST_NUM_PASSED++;
     if (TEST5 != -1) TEST_NUM_PASSED++;
+		
+		while(PASS_STRING[count] != '\0') {
+			if (PASS_STRING[count] == '\a') {
+				int integer_counter = 0;
+				char integer_buffer[20];
+				int2str(TEST_NUM_PASSED, integer_buffer);
+				TEST_NUM_PASSED = NUM_TESTS - TEST_NUM_PASSED;
+				while (integer_buffer[integer_counter] != '\0') {
+					buffer[count_copy++] = integer_buffer[integer_counter];
+					integer_counter++;
+				}
+			} else {
+				buffer[count_copy++] = PASS_STRING[count];
+			}
+			count++;
+		}
+		buffer[count] = '\0';
+		crt_print(buffer);
 
-		crt_print("G013_test: 5/5 OK\n\rG013_test: 0/5 FAIL\n\r");
-    /*crt_print("G013_test: ");
-    crt_output_int(TEST_NUM_PASSED);
-    crt_print("/5 tests OK\n\r");
-
-    crt_print("G013_test: ");
-    crt_output_int(5-TEST_NUM_PASSED);
-    crt_print("/5 tests FAIL\n\r"); */
     #endif
     ret_val = release_processor();
   }

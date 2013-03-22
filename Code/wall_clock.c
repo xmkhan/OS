@@ -115,6 +115,9 @@ void wall_clock(void)
 				WALL_CLOCK_RUNNING = 1;
 			}
 		}
+		
+		release_memory_block((void *)command);
+		command = (void *)0;
 
 		while (WALL_CLOCK_RUNNING) {
 			command = get_message(wall_clock_pcb);
@@ -134,9 +137,13 @@ void wall_clock(void)
 					else if (((char *)command->msg_data)[1] == 'T')
 					{
 						WALL_CLOCK_RUNNING = 0;
+						release_memory_block((void *)command);
+						command = (void *)0;
 						break;
 					}
 				}
+				release_memory_block((void *)command);
+				command = (void *)0;
 			}
 
 			counter = get_current_time();

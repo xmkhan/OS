@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "crt_display.h"
 #include "message.h"
+#include "keyboard.h"
 
 Process set_process_pcb_process;
 PCB *set_process_pcb_pcb;
@@ -47,7 +48,7 @@ void set_process_pcb_init(void) {
   init_set_process_msg = (MSG *)k_request_memory_block();
   init_set_process_msg->msg_type = 4;
   init_set_process_msg->msg_data = "C";
-  k_send_message(SET_PROCESS_PCB_PID, init_set_process_msg);
+  k_send_message(KEYBOARD_PID, init_set_process_msg);
 }
 
 int str2int(char *s) {
@@ -55,16 +56,17 @@ int str2int(char *s) {
 	int total = 0;
 	int multiplier = 1;
 	
-	while (t) {
+	while (*t != '\0') {
 		t++;
 	}
 	t--;
 	
 	while (t != s) {
-		total += ((*t) + 48) * multiplier;
+		total += ((*t) - 48) * multiplier;
 		multiplier *= 10;
 		t--;
 	}
+	total += ((*t) - 48) * multiplier;
 	return total;
 }
 
@@ -83,7 +85,8 @@ void set_process_pcb_proc(void) {
 		int i = 0;
 		
 		if (*b == 'C') {
-			b++;
+			b += 2;
+			
 			// get first parameter: pid
 			i = 0;
 			while (*b != ' ' && *b != '\0') {
@@ -91,6 +94,10 @@ void set_process_pcb_proc(void) {
 				b++;
 				i++;
 			}
+			if (*b == ' ') {
+				b++;
+			}
+			
 			pid_str[i] = '\0';
 			pid = str2int(pid_str);
 			
@@ -101,16 +108,20 @@ void set_process_pcb_proc(void) {
 				b++;
 				i++;
 			}
+			if (*b == ' ') {
+				b++;
+			}
+			
 			priority_str[i] = '\0';
 			priority = str2int(priority_str);
 			
 			// set process priority
-			i = k_set_process_priority(pid, priority);
+			i = set_process_priority(pid, priority);
 			if (i == -1) {
-				error_msg = (MSG *)k_request_memory_block();
+				error_msg = (MSG *)request_memory_block();
 				error_msg->msg_type = 1;
 				error_msg->msg_data = "Invalid command.\n\r";
-				k_send_message(CRT_PID, error_msg);
+				send_message(CRT_PID, error_msg);
 			}
 		}
 		release_processor();
