@@ -15,7 +15,6 @@
 volatile uint8_t g_UART0_TX_empty=1;
 volatile uint8_t g_UART0_buffer[BUFSIZE];
 volatile uint32_t g_UART0_count = 0;
-volatile int iState = 7;
 PCB *saved_process;
 MSG *hotkey_msg = (void *)0;
 
@@ -174,7 +173,7 @@ void c_UART0_IRQHandler(void)
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
-  iState = k_get_interrupt_state();
+  volatile int iState = k_get_interrupt_state();
 
 	k_set_interrupt_state(4);
 	

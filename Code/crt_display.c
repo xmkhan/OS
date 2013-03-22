@@ -27,7 +27,7 @@ void hotkey_init(void) {
   
   hotkey_pcb->pid = HOTKEY_PID;
   hotkey_pcb->priority = 99;
-  hotkey_pcb->type = USER;
+  hotkey_pcb->type = DEBUG;
   hotkey_pcb->state = NEW;
   hotkey_pcb->status = NONE;
   hotkey_pcb->head = (void *) 0;
@@ -92,60 +92,12 @@ void crt_init(void) {
   insert_process_pq(crt_process.pcb);
 }
 
-#define def_crt_print(kprefix) void kprefix##crt_print(char *input) {\
-	MSG* msg = (void *)0;\
-  int iState = kprefix##get_interrupt_state();\
-  kprefix##set_interrupt_state(4);\
-	msg = (MSG*)kprefix##request_memory_block();\
-  msg->msg_data = (void*) input;\
-  msg->msg_type = 1;\
-  kprefix##send_message(CRT_PID, msg);\
-  kprefix##set_interrupt_state(iState);\
-}
-
-def_crt_print();
-def_crt_print(k_);
-
-/*
-void crt_print(char* input) {
-  PCB* saved_process = current_process;
-	MSG* msg = (void *)0;
-	if (__get_CONTROL() == BIT(0)) {
-		msg = (MSG*) request_memory_block();
-	}
-	else {
-		msg = (MSG*) k_request_memory_block();
-	}
-	
+void crt_print(char *input) {
+	MSG* msg = (MSG*)request_memory_block();
   msg->msg_data = (void*) input;
   msg->msg_type = 1;
-  
-	if (__get_CONTROL() == BIT(0)) {
-		send_message(CRT_PID, msg);
-	}
-	else {
-		k_send_message(CRT_PID, msg);
-	}
-  
-  if(!(saved_process->pid == 0 && saved_process->state == NEW))
-  if (__get_CONTROL() == BIT(0)) {  
-		context_switch(crt_pcb);
-	}
-	else {
-		k_context_switch(crt_pcb);
-	}
-  
-  //crt_i_process();
-  
-  if(!(saved_process->pid == 0 && saved_process->state == NEW))
-  if (__get_CONTROL() == BIT(0)) {  
-		context_switch(saved_process);
-	}
-	else {
-		k_context_switch(saved_process);
-	}
+  send_message(CRT_PID, msg);
 }
-*/
 
 /**
  * Convert a positive integer or 0 to char*
@@ -229,7 +181,7 @@ void hot_key_handler(void) {
 	MSG *msg = (void *)0;
 	int sender_id = 0;
   char* out = (char*) hotkey_data->msg_data;
-  char* header = "";
+  char* header = "\n\rProc_id  Priority Status\n\r";
   int i = 0, j=0, n = 0, col_empty = 0;
   PCB *iterate;  
 	PCB *saved_process;
@@ -248,7 +200,6 @@ void hot_key_handler(void) {
 
   //the categories we would be outputing
   concat(&out, header);
-//  crt_print((void*)header);
   
   //iterate through every process
   //and output relevant information
@@ -263,7 +214,6 @@ void hot_key_handler(void) {
       buffer[n] = ' ';
     }
     concat(&out, buffer);
-    //crt_print((void*)buffer);
     
     //output the priority
     int_to_char_star(iterate->priority, buffer);
@@ -275,33 +225,26 @@ void hot_key_handler(void) {
     
     //output the state
     concat(&out, buffer);
-    //crt_print((void*)buffer);
     if(iterate->state == BLKD) {
       if(iterate->status == MEM_BLKD) {
         concat(&out, p_states[6]);
-        //crt_print((void*) p_states[6]);
       }
       else if(iterate->status == MSG_BLKD) {
         concat(&out, p_states[3]);
-//        crt_print((void*) p_states[3]);
       }
       else if(iterate->status == SEM_BLKD) {
           concat(&out, p_states[7]);
-//          crt_print((void*) p_states[7]);
       }
     }
     else {
       concat(&out, p_states[iterate->state]);
-//      crt_print((void*) p_states[iterate->state]);
     }
     
     //Print a new line at the end
     buffer[0] = '\n';
     buffer[1] = '\r';
     buffer[2] = '\0';
-    concat(&out, buffer);
-//    crt_print((void*) buffer);
-    
+    concat(&out, buffer);    
   }
   *out = '\0';
   send_message(CRT_PID, hotkey_data);

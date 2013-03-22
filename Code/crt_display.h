@@ -32,7 +32,6 @@ void crt_system_process(void);
 void hot_key_handler(void);
 
 void crt_print(char*);
-void k_crt_print(char*);
 
 #endif
 

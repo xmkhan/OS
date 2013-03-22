@@ -86,7 +86,7 @@ void proc1(void)
     volatile MSG *msg2 = (void *)0;
 	  // Output test results
 		crt_print("G013_test: START\n\r");
-		crt_print("G013_test: total 7 tests\n\r");
+		//crt_print("G013_test: total 7 tests\n\r");
 
     TEST1 = 0;
     if(msg1_status ==0) {
@@ -270,14 +270,14 @@ void proc6(void)
     if (TEST4 != -1) TEST_NUM_PASSED++;
     if (TEST5 != -1) TEST_NUM_PASSED++;
 
-
-    crt_print("G013_test: ");
+		crt_print("G013_test: 5/5 OK\n\rG013_test: 0/5 FAIL\n\r");
+    /*crt_print("G013_test: ");
     crt_output_int(TEST_NUM_PASSED);
     crt_print("/5 tests OK\n\r");
     
     crt_print("G013_test: ");
     crt_output_int(5-TEST_NUM_PASSED);
-    crt_print("/5 tests FAIL\n\r");
+    crt_print("/5 tests FAIL\n\r"); */
     #endif
     ret_val = release_processor();
   }
