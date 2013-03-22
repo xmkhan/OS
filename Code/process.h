@@ -14,7 +14,7 @@ typedef struct MSG MSG;
 
 /** Process STATES */
 typedef enum { NEW=0, RDY, RUN, BLKD, INTERRUPTED, EXIT } STATE;
-typedef enum { USER=0, INTERRUPT } TYPE;
+typedef enum { USER=0, INTERRUPT, SYSTEM, DEBUG } TYPE;
 typedef enum { NONE=0, MEM_BLKD, MSG_BLKD, SEM_BLKD } IO_STATUS;
 
 /**
@@ -46,6 +46,8 @@ typedef struct Process {
 extern PCB *current_process;
 
 void process_init(void);
+void process_reset(void);
+
 int insert_process_pq(PCB* pcb);
 int remove_process_pq(PCB* pcb);
 PCB *lookup_pid(int pid);

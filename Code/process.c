@@ -7,6 +7,7 @@
 #include "keyboard.h"
 #include "crt_display.h"
 #include "uart_i_process.h"
+#include "wall_clock.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -66,6 +67,8 @@ PCB *lookup_pid(int pid) {
 			return wall_clock_pcb;
 		case HOTKEY_PID:
 			return hotkey_pcb;
+		case KEYBOARD_PID:
+			return keyboard_pcb;
 	}
 	return (void *)0;
 }
@@ -140,7 +143,7 @@ int k_context_switch(PCB* process) {
           old_process->mp_sp = (uint32_t *) __get_MSP();
 
        if(old_process->state != BLKD) {
-		     old_process->state = current_process->type == INTERRUPT ? INTERRUPTED : RDY;
+		     old_process->state = (current_process->type == INTERRUPT || current_process->type == DEBUG) ? INTERRUPTED : RDY;
          insert_process_pq((PCB*)old_process);
        }
      }
@@ -160,7 +163,7 @@ int k_context_switch(PCB* process) {
 
      if(old_process->state != BLKD)
      {
-   		 old_process->state = current_process->type == INTERRUPT ? INTERRUPTED : RDY;
+   		 old_process->state = (current_process->type == INTERRUPT || current_process->type == DEBUG) ? INTERRUPTED : RDY;
        insert_process_pq((PCB*)old_process);
      }
      remove_process_pq((PCB*)current_process);
@@ -185,13 +188,16 @@ int k_get_interrupt_state()
 
 void k_set_interrupt_state(int newState)
 {
+
   LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
   
   unsigned int timer = newState&1;
   unsigned int kb = newState&2;
   unsigned int crt = newState&4;
- 
-  
+
+	NVIC_DisableIRQ(TIMER0_IRQn);
+  NVIC_DisableIRQ(UART0_IRQn);
+	
   switch(timer)
   {
     case 1:
@@ -223,4 +229,9 @@ void k_set_interrupt_state(int newState)
   }
   
   state = newState;
+}
+
+// set current process to null process
+void process_reset(void) {
+	 current_process = process_list[0].pcb; // null process
 }
