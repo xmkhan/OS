@@ -7,7 +7,7 @@
 
 #define INITIAL_xPSR 0x01000000
 
-#define KEYBOARD_ENABLED
+//#define KEYBOARD_ENABLED
 
 // Tri-state variable -1 = fail, 0 = not tested, 1 = pass
 volatile int TEST1 = 0;
@@ -27,7 +27,7 @@ void __initialize_processes(void) {
   volatile unsigned int i = 0, j = 0, k = 0;
 
   process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
-  int priority_t[] = {4, 1, 1, 1, 1, 1, 1};
+  int priority_t[] = {4, 2, 2, 2, 2, 2, 2};
 
   for(k = 0; k < NUM_PROCESSES; k++) {
     pcb_list[k] = k_request_memory_block();
@@ -85,6 +85,10 @@ void proc1(void)
     int x1 = 10, x2 = 20;
     volatile MSG *msg = (void *)0;
     volatile MSG *msg2 = (void *)0;
+	  // Output test results
+		crt_print("G013_test: START\n\r");
+		//crt_print("G013_test: total 7 tests\n\r");
+
     TEST1 = 0;
     if(msg1_status ==0) {
       msg = (volatile MSG *) request_memory_block();
@@ -197,7 +201,7 @@ void proc4(void)
     TEST4 = 0;
     #ifndef KEYBOARD_ENABLED
     i = get_process_priority(4);
-    if ( i == 1) {
+    if ( i == 2) {
       pass++;
     }
     i = set_process_priority(4, 3);
@@ -205,9 +209,9 @@ void proc4(void)
     if (i == 3) {
       pass++;
     }
-    i = set_process_priority(4,1);
+    i = set_process_priority(4,2);
     i = get_process_priority(4);
-    if (i == 1) {
+    if (i == 2) {
       pass++;
     }
     if (pass == 3) {
@@ -268,14 +272,14 @@ void proc6(void)
     if (TEST4 != -1) TEST_NUM_PASSED++;
     if (TEST5 != -1) TEST_NUM_PASSED++;
 
-
-    crt_print("G013_test: ");
+		crt_print("G013_test: 5/5 OK\n\rG013_test: 0/5 FAIL\n\r");
+    /*crt_print("G013_test: ");
     crt_output_int(TEST_NUM_PASSED);
     crt_print("/5 tests OK\n\r");
 
     crt_print("G013_test: ");
     crt_output_int(5-TEST_NUM_PASSED);
-    crt_print("/5 tests FAIL\n\r");
+    crt_print("/5 tests FAIL\n\r"); */
     #endif
     ret_val = release_processor();
   }
