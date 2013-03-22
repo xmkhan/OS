@@ -9,8 +9,9 @@ char KEYBOARD_INPUT_BUFFER[64];
 int curr_key_buf_pos = 0;
 int WALL_CLOCK_RUNNING = 0;
 
-MSG *key_msg = (void *)0;
-MSG *error_msg = (void *)0;
+//MSG *key_msg = (void *)0;
+//MSG *command_msg = (void *)0;
+//MSG *error_msg = (void *)0;
 
 int COMMAND_PIDS[20] = {0};
 char COMMAND_CHARS[20];
@@ -18,6 +19,8 @@ int command_pos = 0;
 
 Process keyboard_process;
 PCB* keyboard_pcb;
+
+volatile char input_display[3];
 
 //static PCB *saved_process = (void *)0;
 
@@ -74,33 +77,39 @@ void keyboard_init(void) {
   insert_process_pq(keyboard_process.pcb);
 	
 	// Allocate memory for keyboard so that when memory runs out keyboard features used for debugging still work
-  key_msg = (MSG*) k_request_memory_block();  
-	key_msg->msg_type = 2;
+  //key_msg = (MSG*) k_request_memory_block();  
+	//key_msg->msg_type = 2;
 	
-	error_msg = (MSG *)k_request_memory_block();
-	error_msg->msg_type = 1;
-	error_msg->msg_data = "Invalid command.";
+	//error_msg = (MSG *)k_request_memory_block();
+	//error_msg->msg_type = 1;
+	//error_msg->msg_data = "Invalid command.";
+	
+	//command_msg = (MSG *)k_request_memory_block();
+	//command_msg->msg_type = 2;
 }
 
 void keyboard_proc(char input, PCB *saved_process)
 {
 	volatile char command[2];
 	volatile int i = 0;
-	
-	char input_display[3];
+
 	char pid_str[4];
 	int pid;
 	char priority_str[4];
 	int priority;
 	
 	volatile char *b = KEYBOARD_INPUT_BUFFER;
+	MSG *key_msg = (MSG *)k_request_memory_block();
 	MSG *reg_msg = k_get_message(keyboard_pcb);
-	MSG *error_msg = (MSG *)k_request_memory_block();
+	MSG *command_msg = (void *)0;
+	MSG *error_msg = (void *)0;
+	key_msg->msg_type = 2;
 	
-	if (reg_msg->msg_type == 4) {
+	if (reg_msg != 0 && reg_msg->msg_type == 4) {
 		COMMAND_PIDS[command_pos] = reg_msg->sender_pid;
 		COMMAND_CHARS[command_pos] = *((char *)reg_msg->msg_data);
 		command_pos++;
+		k_release_memory_block((void *)reg_msg);
 	}
 	
 	// store input char in buffer, or process buffer if Enter is pressed
@@ -108,7 +117,7 @@ void keyboard_proc(char input, PCB *saved_process)
 		KEYBOARD_INPUT_BUFFER[curr_key_buf_pos++] = input;
 		input_display[0] = input;
 		input_display[1] = '\0';
-		key_msg->msg_data = input_display;
+		key_msg->msg_data = (char *)input_display;
 		k_send_message(CRT_PID, key_msg);
 //		k_crt_i_process();
 		return;
@@ -118,7 +127,7 @@ void keyboard_proc(char input, PCB *saved_process)
 		input_display[0] = '\n';
 		input_display[1] = '\r';
 		input_display[2] = '\0';
-		key_msg->msg_data = input_display;
+		key_msg->msg_data = (char *)input_display;
 		k_send_message(CRT_PID, key_msg);
 	//	k_crt_i_process();
 		curr_key_buf_pos = 0;
@@ -139,9 +148,12 @@ void keyboard_proc(char input, PCB *saved_process)
 	
 	// skip over %
 	b = KEYBOARD_INPUT_BUFFER+1;
-	key_msg->msg_data = (void *)b;
+	command_msg = (MSG *)k_request_memory_block();
+	command_msg->msg_type = 2;
+	command_msg->msg_data = (void *)b;
 	
 	// handle %C ourselves
+	// -- TODO: move to its own process
 	if (command[0] == 'C') {
 		b++;
 		// get first parameter: pid
@@ -167,6 +179,9 @@ void keyboard_proc(char input, PCB *saved_process)
 		// set process priority
 		i = k_set_process_priority(pid, priority);
 		if (i == -1) {
+			error_msg = (MSG *)k_request_memory_block();
+			error_msg->msg_type = 1;
+			error_msg->msg_data = "Invalid command.\n\r";
 			k_send_message(CRT_PID, error_msg);
 		}
 		return;
@@ -175,7 +190,8 @@ void keyboard_proc(char input, PCB *saved_process)
 	// handle command types
 	for (i = 0; i < command_pos; i++) {
 		if (command[0] == COMMAND_CHARS[i]) {
-			k_send_message(COMMAND_PIDS[i], key_msg);
+			k_send_message(COMMAND_PIDS[i], command_msg);
+			break;
 		}
 	}
 	/*

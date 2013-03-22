@@ -23,6 +23,7 @@ void __init()
 	 i_uart_init(0);
    timer_init(0);
 	 wall_clock_init();
+	 process_reset();
 }
 
 int main() {
@@ -35,11 +36,7 @@ int main() {
 	__enable_irq();
   
   __set_CONTROL(__get_CONTROL() | BIT(0)); 
-    
-  // Output test results
-  crt_print("G013_test: START\n\r");
-  crt_print("G013_test: total 7 tests\n\r");
-  
+      
   ret_val = release_processor();
 
 	return -1;

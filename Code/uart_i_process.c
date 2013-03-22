@@ -174,7 +174,6 @@ void c_UART0_IRQHandler(void)
 	uint8_t input_char;
 	PCB* saved_process = (void *)0;
 	LPC_UART_TypeDef *pUart = (LPC_UART_TypeDef *)LPC_UART0;
-	int key_pressed = 0;
   iState = k_get_interrupt_state();
 
 	k_set_interrupt_state(4);
@@ -187,16 +186,10 @@ void c_UART0_IRQHandler(void)
 		input_char = pUart->RBR;
 		
 		if (input_char == 96) {
-
-			if (!key_pressed) {
-				saved_process = current_process;
-			
-				hotkey_msg->msg_data = (void *)saved_process;
-				k_send_message(HOTKEY_PID, hotkey_msg);
-				k_context_switch(hotkey_pcb);
-			}
-			key_pressed = !key_pressed;
-			
+			saved_process = current_process;
+			hotkey_msg->msg_data = (void *)saved_process;
+			k_send_message(HOTKEY_PID, hotkey_msg);
+			k_context_switch(hotkey_pcb);
 		} else {
 			saved_process = current_process;
 			// check if at start the timer started before processes started being schedule, if so no context switch
@@ -205,57 +198,12 @@ void c_UART0_IRQHandler(void)
 			
 			keyboard_proc(input_char, saved_process);
 			
-						// check if at start the timer started before processes started being schedule, if so no context switch
+			// check if at start the timer started before processes started being schedule, if so no context switch
 			if(!(saved_process->pid == 0 && saved_process->state == NEW))
 				k_context_switch(saved_process);
 			
 			g_UART0_buffer[g_UART0_count++] = input_char;
-		/*
-		if (input_char == 13) {
-			g_UART0_buffer[--g_UART0_count] = '\0';
-			g_UART0_count = 0;
-			
-			input_display[0] = '\n';
-			input_display[1] = '\0';
 
-			key_msg->msg_data = input_display;
-			k_send_message(CRT_PID, key_msg);
-//			k_crt_i_process();
-
-			g_UART0_TX_empty = 1;
-			
-			input_display[0] = '\r';
-			input_display[1] = '\0';
-
-			key_msg->msg_data = input_display;
-			k_send_message(CRT_PID, key_msg);
-	//		k_crt_i_process();
-			
-			saved_process = current_process;
-  
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			if(!(saved_process->pid == 0 && saved_process->state == NEW))
-				k_context_switch(keyboard_pcb);
-  
-			// call i process
-			keyboard_proc((char *)g_UART0_buffer, saved_process);
-  
-			// check if at start the timer started before processes started being schedule, if so no context switch
-			//if(!(saved_process->pid == 0 && saved_process->state == NEW))
-			//	k_context_switch(saved_process);
-			
-			//g_UART0_TX_empty = 1;
-			//input_display[0] = '\r';
-			//input_display[1] = '\0';
-			//hotkey_msg->msg_data = input_display;
-			//msg_send_status = send_message(CRT_PID, hotkey_msg);
-		}
-		else {
-			key_msg->msg_data = input_display;
-			k_send_message(CRT_PID, key_msg);
-		//	k_crt_i_process();
-		}
-		*/
 			if ( g_UART0_count == BUFSIZE ) {
 				//g_UART0_buffer[g_UART0_count] = '\0';
 				//keyboard_proc((char *)g_UART0_buffer);

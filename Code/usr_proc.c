@@ -26,7 +26,7 @@ void __initialize_processes(void) {
   volatile unsigned int i = 0, j = 0, k = 0;  
   
   process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
-  int priority_t[] = {4, 1, 1, 1, 1, 1, 1};
+  int priority_t[] = {4, 2, 2, 2, 2, 2, 2};
 
   for(k = 0; k < NUM_PROCESSES; k++) {
     pcb_list[k] = k_request_memory_block();
@@ -84,6 +84,10 @@ void proc1(void)
     int x1 = 10, x2 = 20;
     volatile MSG *msg = (void *)0;
     volatile MSG *msg2 = (void *)0;
+	  // Output test results
+		crt_print("G013_test: START\n\r");
+		crt_print("G013_test: total 7 tests\n\r");
+
     TEST1 = 0;
     if(msg1_status ==0) {
       msg = (volatile MSG *) request_memory_block();

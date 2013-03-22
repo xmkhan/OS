@@ -46,6 +46,8 @@ typedef struct Process {
 extern PCB *current_process;
 
 void process_init(void);
+void process_reset(void);
+
 int insert_process_pq(PCB* pcb);
 int remove_process_pq(PCB* pcb);
 PCB *lookup_pid(int pid);

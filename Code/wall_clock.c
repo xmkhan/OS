@@ -3,6 +3,7 @@
 #include "crt_display.h"
 #include "timer.h"
 #include "message.h"
+#include "keyboard.h"
 
 int WALL_CLOCK_START_TIMER = 0;
 char CURR_TIME_BUFFER[11];
@@ -43,17 +44,19 @@ void ts_to_hms(int ts, char *buffer)
 }
 
 void wall_clock_init(void) {
+	
   uint32_t *sp = (void *)0;
   int j = 0;
+	MSG *init_kcd_msg = (void *)0;
   
   // initialize keyboard display process
   wall_clock_pcb = k_request_memory_block();
   wall_clock_process.stack = k_request_memory_block();
   
   wall_clock_pcb->pid = WALL_CLOCK_PID;
-  wall_clock_pcb->priority = 0;
+  wall_clock_pcb->priority = 1;
 	// -- TODO: set type to SYSTEM when implemented
-  wall_clock_pcb->type = USER;
+  wall_clock_pcb->type = SYSTEM;
   wall_clock_pcb->state = NEW;
   wall_clock_pcb->head = (void *) 0;
   wall_clock_pcb->next = (void *) 0;
@@ -76,16 +79,67 @@ void wall_clock_init(void) {
   wall_clock_process.pcb->mp_sp = (uint32_t *)sp;
   
   insert_process_pq(wall_clock_process.pcb);
+	
+	current_process = wall_clock_pcb;
+	
+	init_kcd_msg = (MSG *)k_request_memory_block();
+	init_kcd_msg->msg_type = 4;
+	init_kcd_msg->msg_data = "W";
+	k_send_message(KEYBOARD_PID, init_kcd_msg);
 }
 
 void wall_clock(void)
 {
-	while(1)
+	while (1)
 	{
-		MSG* msg = (void *)0;
-		int counter = WALL_CLOCK_START_TIMER;
-		int comparison = WALL_CLOCK_START_TIMER;
+		//MSG *msg = (void *)0;
+		MSG *command = (void *)0;
+		int counter = 0;
+		int sender_pid = 0;
+		int comparison = 0;
+		
+		command = receive_message(&sender_pid);
+		counter = WALL_CLOCK_START_TIMER;
+		comparison = WALL_CLOCK_START_TIMER;
+		
+		if (((char *)command->msg_data)[0] == 'W') {
+			if (((char *)command->msg_data)[1] == 'R')
+			{
+				WALL_CLOCK_START_TIMER = get_current_time();
+				ts_to_hms(0, CURR_TIME_BUFFER);
+				WALL_CLOCK_RUNNING = 1;
+			}
+			else if (((char *)command->msg_data)[1] == 'S')
+			{
+				WALL_CLOCK_START_TIMER = get_current_time();
+				ts_to_hms(hms_to_ts((char *)command->msg_data + 3), CURR_TIME_BUFFER);
+				WALL_CLOCK_RUNNING = 1;
+			}
+		}
+		
 		while (WALL_CLOCK_RUNNING) {
+			command = get_message(wall_clock_pcb);
+			if (command != 0)
+			{
+				if (((char *)command->msg_data)[0] == 'W') {
+					if (((char *)command->msg_data)[1] == 'R')
+					{
+						WALL_CLOCK_START_TIMER = get_current_time();
+						ts_to_hms(0, CURR_TIME_BUFFER);
+					}
+					else if (((char *)command->msg_data)[1] == 'S')
+					{
+						WALL_CLOCK_START_TIMER = get_current_time();
+						ts_to_hms(hms_to_ts((char *)command->msg_data + 3), CURR_TIME_BUFFER);
+					}
+					else if (((char *)command->msg_data)[1] == 'T')
+					{
+						WALL_CLOCK_RUNNING = 0;
+						break;
+					}
+				}
+			}
+
 			counter = get_current_time();
 			if (counter - comparison >= 1000) {
 				ts_to_hms(hms_to_ts(CURR_TIME_BUFFER)+1, CURR_TIME_BUFFER);
@@ -94,7 +148,6 @@ void wall_clock(void)
 			}
 		}	
 		
-		msg = get_message(wall_clock_pcb);
-	  context_switch(msg->msg_data);		
+		//release_processor();
 	}
 }

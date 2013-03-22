@@ -236,9 +236,6 @@ void hot_key_handler(void) {
   
   //States' char* representation
   char* p_states[NUM_STATES];
- 	msg = (MSG *)receive_message(&sender_id);
-	saved_process = (PCB *)msg->msg_data;
-	context_switch(saved_process);
 
   p_states[j++] = "New";
   p_states[j++] = "Ready";

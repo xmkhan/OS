@@ -67,6 +67,8 @@ PCB *lookup_pid(int pid) {
 			return wall_clock_pcb;
 		case HOTKEY_PID:
 			return hotkey_pcb;
+		case KEYBOARD_PID:
+			return keyboard_pcb;
 	}
 	return (void *)0;
 }
@@ -224,4 +226,9 @@ void k_set_interrupt_state(int newState)
   }
   
   state = newState;
+}
+
+// set current process to null process
+void process_reset(void) {
+	 current_process = process_list[0].pcb; // null process
 }
