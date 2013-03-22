@@ -481,6 +481,11 @@
               <FileType>1</FileType>
               <FilePath>.\timer.c</FilePath>
             </File>
+            <File>
+              <FileName>wall_clock.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\wall_clock.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -535,6 +540,11 @@
               <FileName>timer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\timer.h</FilePath>
+            </File>
+            <File>
+              <FileName>wall_clock.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\wall_clock.h</FilePath>
             </File>
           </Files>
         </Group>

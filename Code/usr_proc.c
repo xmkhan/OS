@@ -175,8 +175,6 @@ void proc3(void)
     if (*((int *)received_msg->msg_data) == 30) {
       pass++;
     }
-    release_memory_block((void *)msg);
-    msg3_status = 0;
 
     if (pass == 1) {
      crt_print("G013_test: test 3 OK\n\r");
