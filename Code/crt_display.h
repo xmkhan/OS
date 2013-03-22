@@ -20,7 +20,7 @@ void crt_init(void);
 void hotkey_init(void);
 
 // convert an integer to char*
-void int_to_char_star(int input, volatile char* buffer);
+void int2str(int input, volatile char* buffer);
 
 // output an int to display
 void crt_output_int(int input);
