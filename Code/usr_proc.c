@@ -395,6 +395,7 @@ void procC(void) {
       msg_int = (int*) msg->msg_data;
       if(*msg_int % 20 == 0) {
         //send message to crt
+        msg->msg_data = "Process C\n\r";
         send_message(CRT_PID, (void*)msg);
 
         //send delayed messaged
