@@ -486,6 +486,11 @@
               <FileType>1</FileType>
               <FilePath>.\wall_clock.c</FilePath>
             </File>
+            <File>
+              <FileName>set_process_pcb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\set_process_pcb.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -545,6 +550,11 @@
               <FileName>wall_clock.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\wall_clock.h</FilePath>
+            </File>
+            <File>
+              <FileName>set_process_pcb.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\set_process_pcb.h</FilePath>
             </File>
           </Files>
         </Group>
