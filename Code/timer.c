@@ -182,8 +182,10 @@ void c_TIMER0_IRQHandler(void)
     timer_saved_process->state = RDY;
     k_release_processor();
   }
-
-  k_set_interrupt_state(iState);
+  else
+  {
+    k_set_interrupt_state(iState);  
+  }
 }
 
 void timeout_i_process(void)

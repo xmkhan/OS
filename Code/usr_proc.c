@@ -358,7 +358,7 @@ void procA(void) {
   while(1) {
     msg_envelope = (volatile MSG *) request_memory_block();
     msg_envelope->msg_type = 3; // count_report
-    msg_envelope->msg_data = &num;
+    msg_envelope->msg_data = (void*) num;
     send_status = send_message(8, (void*)msg_envelope);
     num += 1;
     ret_val = release_processor();
@@ -382,7 +382,7 @@ void procC(void) {
   volatile int sent_status    = 10;
   volatile int ret_val        = 20;
   int sender_pid              = -1;
-  int* msg_int                = (void*) 0;
+  int msg_int                = 0;
 
   while(1) {
     if(head == (void*) 0) {
@@ -392,8 +392,8 @@ void procC(void) {
       msg = dequeue_q(&head, MSG_T);
     }
     if (msg->msg_type == 3) { // count_report
-      msg_int = (int*) msg->msg_data;
-      if(*msg_int % 20 == 0) {
+      msg_int = (int)((void*) msg->msg_data);
+      if(msg_int % 20 == 0) {
         //send message to crt
         msg->msg_data = "Process C\n\r";
         send_message(CRT_PID, (void*)msg);
