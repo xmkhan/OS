@@ -6,7 +6,7 @@ typedef struct Process Process;
 
 void __initialize_processes(void);
 
-#define NUM_PROCESSES 7
+extern int NUM_PROCESSES;
 
 typedef struct PCB PCB;
 typedef struct Process Process;
@@ -21,5 +21,8 @@ void proc3(void);
 void proc4(void);
 void proc5(void);
 void proc6(void);
+void procA(void);
+void procB(void);
+void procC(void);
 
 #endif

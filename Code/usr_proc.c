@@ -3,11 +3,16 @@
 #include "message.h"
 #include "usr_proc.h"
 #include "crt_display.h"
+#include "keyboard.h"
 #include "pq.h"
 
 #define INITIAL_xPSR 0x01000000
 
 #define KEYBOARD_ENABLED
+
+#define PART3
+
+int NUM_PROCESSES = 0;
 
 // Tri-state variable -1 = fail, 0 = not tested, 1 = pass
 #define NUM_TESTS 5
@@ -17,26 +22,31 @@ volatile int TEST3 = 0;
 volatile int TEST4 = 0;
 volatile int TEST5 = 0;
 // process list
-PCB *pcb_list[NUM_PROCESSES];
-Process process_list[NUM_PROCESSES];
+#ifndef PART3
+PCB *pcb_list[7];
+Process process_list[7];
+#else
+PCB *pcb_list[4];
+Process process_list[4];
+#endif
 
 typedef void (*process_ptr)(void);
 
 // set up each process (including null) and their stack frames
-void __initialize_processes(void) {
+void __initialize(process_ptr process_t[], int priority_t[], int BASE) {
+	
+	
   uint32_t *sp = (void *)0;
   volatile unsigned int i = 0, j = 0, k = 0;
-
-  process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
-  int priority_t[] = {4, 2, 2, 2, 2, 2, 2};
-
+	
   for(k = 0; k < NUM_PROCESSES; k++) {
     pcb_list[k] = k_request_memory_block();
     process_list[k].stack = k_request_memory_block();
   }
 
   for (; i < NUM_PROCESSES; i++) {
-    pcb_list[i]->pid = i;
+		if (i != 0) pcb_list[i]->pid = i + BASE;
+		else pcb_list[i]->pid = i;
     pcb_list[i]->priority = priority_t[i];
     pcb_list[i]->type = USER;
     pcb_list[i]->state = NEW;
@@ -62,6 +72,23 @@ void __initialize_processes(void) {
 
     process_list[i].pcb->mp_sp = (uint32_t *)sp;
   }
+}
+
+
+
+void __initialize_processes(void) {
+	#ifndef PART3
+		process_ptr process_t[] = {null_process, proc1, proc2, proc3, proc4, proc5, proc6};
+		int priority_t[] = {4, 2, 2, 2, 2, 2, 2};
+		NUM_PROCESSES = 7;
+	__initialize(process_t, priority_t, 0); 
+	#else
+		process_ptr process_t[] = {null_process, procA, procB, procC};
+		int priority_t[] = {4, 3, 2, 2};
+		NUM_PROCESSES = 4;
+	__initialize(process_t, priority_t, 6); 
+	#endif
+
 }
 
 // null process: simply release processor
@@ -302,6 +329,7 @@ void proc6(void)
 void procA(void) {
   volatile MSG *msg_envelope  = (void *)0;
   volatile MSG *msg           = (void *)0;
+	volatile MSG *command_z_msg = (void *)0;
   volatile int release_status = 0;
   volatile int send_status    = 10;
   int sender_pid              = -1;
@@ -309,15 +337,18 @@ void procA(void) {
   int num                     = 0;
   volatile char* msg_body     = (void *)0;
 
-  msg = (volatile MSG *) request_memory_block();
-  //register with command decoder as handler of %Z commands
-  while(1) {
+  msg = (volatile MSG *)request_memory_block();
+  // register with command decoder as handler of %Z commands
+  command_z_msg = (MSG *)request_memory_block();
+	command_z_msg->msg_type = 4;
+	command_z_msg->msg_data = "Z";
+	send_message(KEYBOARD_PID, (void *)command_z_msg);
+	while (1) {
     msg = receive_message(&sender_pid);
-    msg_body = (char*)msg->msg_data;
-    if(msg_body[0] == '%'
-      && msg_body[1] == 'Z') {
-        release_status = release_memory_block((void *)msg);
-        break;
+    msg_body = (char *)msg->msg_data;
+    if (msg_body[0] == 'Z') {
+      release_status = release_memory_block((void *)msg);
+      break;
     }
     else {
       release_status = release_memory_block((void *)msg);
@@ -368,13 +399,13 @@ void procC(void) {
 
         //send delayed messaged
         q = (volatile MSG *) request_memory_block();
-        q->msg_type = 4;
+        q->msg_type = 5;
         delayed_send(9, (MSG *) q, 10 * 1000);
 
         //add messages to queue while waiting for delayed message
         while(1) {
           msg = receive_message(&sender_pid);
-          if(msg->msg_type == 4) {
+          if(msg->msg_type == 5) {
             break;
           }
           else {

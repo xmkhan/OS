@@ -5,6 +5,7 @@
 #include "message.h"
 #include "process.h"
 #include "memory.h"
+#include "set_process_pcb.h"
 #include "pq.h"
 
 #define NUM_STATES  8
@@ -200,8 +201,8 @@ void hot_key_helper(char* p_states[], char** out, int i, PCB *pcb) {
 		iterate = pcb;
     
 	//output the process id
-	int2str(i, buffer);
-	n = i/10 + 1;
+	int2str(iterate->pid, buffer);
+	n = iterate->pid/10 + 1;
 	col_empty = COL_SIZE - n;
 	for(;n < col_empty; n++) {
 		buffer[n] = ' ';
@@ -275,9 +276,10 @@ void hot_key_handler(void) {
 		hot_key_helper(p_states, &out, i, (void *) 0);
   }
 	
-	//TODO: add set priority to the processes to output
-	hot_key_helper(p_states, &out, wall_clock_pcb->pid, wall_clock_pcb);
 	hot_key_helper(p_states, &out, crt_pcb->pid, crt_pcb);
+	hot_key_helper(p_states, &out, wall_clock_pcb->pid, wall_clock_pcb);
+	hot_key_helper(p_states, &out, set_process_pcb_pcb->pid, set_process_pcb_pcb);
+
 
   *out = '\0';
   send_message(CRT_PID, hotkey_data);
