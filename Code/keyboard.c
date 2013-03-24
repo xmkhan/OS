@@ -65,9 +65,18 @@ void keyboard_proc(char input, PCB *saved_process)
 	volatile int i = 0;
 	
 	volatile char *b = KEYBOARD_INPUT_BUFFER;
-	MSG *key_msg = (MSG *)k_request_memory_block();
+	MSG *key_msg = (void *)0;
 	MSG *reg_msg = k_get_message(keyboard_pcb);
 	MSG *command_msg = (void *)0;
+	
+	if (NUM_MEMORY_BLOCKS == 0) {
+		return;
+	}
+	key_msg = (MSG *)k_request_memory_block();
+	// In case, request_mem_blk returns null
+	if (key_msg == (void *)0) {
+		return
+	}
 	key_msg->msg_type = 1;
 	
 	while (reg_msg != (void *)0) {
