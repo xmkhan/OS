@@ -80,7 +80,7 @@ void keyboard_proc(char input, PCB *saved_process)
 		reg_msg = k_get_message(keyboard_pcb);
 	}
 	
-	if ((input == 13 && NUM_MEMORY_BLOCKS < 1) || (input != 13 && NUM_MEMORY_BLOCKS < 2)) {
+	if ((input != 13 && NUM_MEMORY_BLOCKS < 1) || (input == 13 && NUM_MEMORY_BLOCKS < 2)) {
 		return;
 	}
 	key_msg = (MSG *)k_request_memory_block();
