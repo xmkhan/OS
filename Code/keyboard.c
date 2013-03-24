@@ -68,17 +68,7 @@ void keyboard_proc(char input, PCB *saved_process)
 	MSG *key_msg = (void *)0;
 	MSG *reg_msg = k_get_message(keyboard_pcb);
 	MSG *command_msg = (void *)0;
-	
-	if (NUM_MEMORY_BLOCKS == 0) {
-		return;
-	}
-	key_msg = (MSG *)k_request_memory_block();
-	// In case, request_mem_blk returns null
-	if (key_msg == (void *)0) {
-		return
-	}
-	key_msg->msg_type = 1;
-	
+		
 	while (reg_msg != (void *)0) {
 		
 		if (reg_msg != 0 && reg_msg->msg_type == 4) {
@@ -89,6 +79,16 @@ void keyboard_proc(char input, PCB *saved_process)
 		}
 		reg_msg = k_get_message(keyboard_pcb);
 	}
+	
+	if ((input == 13 && NUM_MEMORY_BLOCKS < 1) || (input != 13 && NUM_MEMORY_BLOCKS < 2)) {
+		return;
+	}
+	key_msg = (MSG *)k_request_memory_block();
+	// In case, request_mem_blk returns null
+	if (key_msg == (void *)0) {
+		return;
+	}
+	key_msg->msg_type = 1;
 	
 	// store input char in buffer, or process buffer if Enter is pressed
 	if (input != 13) {
