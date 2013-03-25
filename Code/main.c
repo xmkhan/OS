@@ -12,6 +12,8 @@
 
 extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
 
+//#define LIMIT_MAX_MEMORY
+
 // Perform intialization of different modules
 void __init()
 {
@@ -26,6 +28,11 @@ void __init()
 	 wall_clock_init();
 	 set_process_pcb_init();
 	 process_reset();
+	
+#ifdef LIMIT_MAX_MEMORY
+	NUM_MEMORY_BLOCKS = 32;
+#endif
+	
 }
 
 int main() {
