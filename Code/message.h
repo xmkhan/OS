@@ -17,6 +17,8 @@ typedef struct MSG {
     long expiry_time;
 } MSG;
 
+extern volatile PCB *msg_pq[];
+
 /**
  * Initializes the memory module
  */

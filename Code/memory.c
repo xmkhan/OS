@@ -50,7 +50,7 @@ void memory_init()
 void* k_request_memory_block(void) {
   MemNode* mem_node = memory_list;
   // add to blocked queue
-  if (NUM_MEMORY_BLOCKS == 0) {
+  while(NUM_MEMORY_BLOCKS == 0) {
     //block the process on memory_req
     current_process->state = BLKD;
     current_process->status = MEM_BLKD;

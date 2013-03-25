@@ -97,7 +97,32 @@ int k_set_process_priority(int process_ID, int priority) {
 	if (process_ID == 0 ||
     !(priority >= 0 && priority < NUM_PRIORITIES)) return -1; // don't change priority of null process
 	
+	switch(p->status){
+		case MEM_BLKD:
+			remove_pq((PCB**) mem_pq, p);
+			break;
+		case MSG_BLKD:
+		  remove_pq((PCB**) msg_pq, p);
+			break;
+		case NONE:
+			remove_pq((PCB**) p_pq, p);	
+			break;
+	}
+	
   p->priority = priority;
+	
+	switch(p->status){
+		case MEM_BLKD:
+			insert_pq((PCB**) mem_pq, p);
+			break;
+		case MSG_BLKD:
+		  insert_pq((PCB**) msg_pq, p);
+			break;
+		case NONE:
+			insert_pq((PCB**) p_pq, p);	
+			break;
+	}
+	
   return p->priority;
 }
 
