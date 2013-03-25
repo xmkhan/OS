@@ -78,7 +78,7 @@ int send_message_global(int dest_process_ID, void *MessageEnvelope, int router_p
   enqueue_q(&(dest_proc->head), msg, type); // enqueue the msg to the destination_proc's queue
   
 
-  if (dest_proc->state == BLKD && delay == 0) {
+  if (dest_proc->state == BLKD && dest_proc->status == MSG_BLKD && delay == 0) {
     // Handle unblocking of destination process.
     remove_pq((PCB **)msg_pq, dest_proc);
     dest_proc->state = RDY; // Must be ready to be added to the RDY_Q
