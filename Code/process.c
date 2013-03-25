@@ -90,8 +90,13 @@ int k_get_process_priority(int process_ID) {
  */
 int k_set_process_priority(int process_ID, int priority) {
   PCB *p = lookup_pid(process_ID);
-  if (process_ID == 0 ||
+  if (p == NULL) {
+		return -1;
+	}
+	
+	if (process_ID == 0 ||
     !(priority >= 0 && priority < NUM_PRIORITIES)) return -1; // don't change priority of null process
+	
   p->priority = priority;
   return p->priority;
 }
